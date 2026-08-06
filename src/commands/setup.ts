@@ -1,5 +1,5 @@
 import { AxiError, installSessionStartHooks } from "axi-sdk-js";
-import { getFlag } from "../args.js";
+import { getFlag, hasFlag } from "../args.js";
 import { resolveSite } from "../context.js";
 import { setToken } from "../keychain.js";
 import { setSiteEmail } from "../site-registry.js";
@@ -7,9 +7,10 @@ import { isStdinTTY, readStdin } from "../stdin.js";
 import * as toon from "../toon.js";
 
 export const SETUP_HELP = `usage: jira-axi setup <subcommand> [flags]
-subcommands[2]:
+subcommands[3]:
   auth --site <alias> --email <you@example.com>   # token piped via stdin
   hooks                                            # install the SessionStart hook
+  skill --check                                    # check whether the skill doc is stale
 examples:
   jira-axi site add work acme.atlassian.net
   echo -n "<api-token>" | jira-axi setup auth --site work --email you@example.com
@@ -23,6 +24,8 @@ export async function setupCommand(args: string[]): Promise<string> {
       return setupAuth(rest);
     case "hooks":
       return setupHooks();
+    case "skill":
+      return setupSkill(rest);
     default:
       throw new AxiError(`unknown setup subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
         "Run `jira-axi setup --help` to see subcommands",
@@ -63,4 +66,19 @@ async function setupAuth(args: string[]): Promise<string> {
 function setupHooks(): string {
   installSessionStartHooks({ marker: "jira-axi", binaryNames: ["jira-axi"] });
   return toon.pair("hooks", "installed");
+}
+
+/**
+ * Staleness gate for the generated skill doc. Full generation is P4 work;
+ * this stub only reports that no skill doc exists yet, so `--check` is a
+ * safe no-op until then rather than a command that silently does nothing.
+ */
+function setupSkill(args: string[]): string {
+  if (!hasFlag(args, "--check")) {
+    throw new AxiError("usage: jira-axi setup skill --check", "VALIDATION_ERROR");
+  }
+  return toon.combine(
+    toon.pair("skill", "not yet generated"),
+    toon.help(["Skill generation lands in a later phase; nothing to check yet"]),
+  );
 }

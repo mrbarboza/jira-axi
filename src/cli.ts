@@ -8,6 +8,8 @@ import { homeCommand } from "./commands/home.js";
 import { siteCommand, SITE_HELP } from "./commands/site.js";
 import { setupCommand, SETUP_HELP } from "./commands/setup.js";
 import { userCommand, USER_HELP } from "./commands/user.js";
+import { issueCommand, ISSUE_HELP } from "./commands/issue.js";
+import { apiCommand, API_HELP } from "./commands/api.js";
 
 export const DESCRIPTION =
   "Agent-ergonomic CLI for Jira Cloud — token-efficient TOON output, pre-computed aggregates. Read-only v1.";
@@ -15,25 +17,30 @@ export const DESCRIPTION =
 const VERSION = readPackageVersion();
 
 export const TOP_HELP = `usage: jira-axi [command] [args] [flags]
-commands[3]: (none)=dashboard, site, setup, user
+commands[5]: (none)=dashboard, site, setup, user, issue, api
 global: --site <alias|host> on any command, overriding JIRA_AXI_SITE / .jira-axi.json / default site
 examples:
   jira-axi
   jira-axi site add work acme.atlassian.net
   echo -n "<api-token>" | jira-axi setup auth --site work --email you@example.com
   jira-axi user whoami
+  jira-axi issue list --mine
 `;
 
 const COMMAND_HELP: Record<string, string> = {
   site: SITE_HELP,
   setup: SETUP_HELP,
   user: USER_HELP,
+  issue: ISSUE_HELP,
+  api: API_HELP,
 };
 
 const COMMANDS: Record<string, AxiCliCommand<SiteContext | undefined>> = {
   site: (args) => siteCommand(args),
   setup: (args) => setupCommand(args),
   user: (args, ctx) => userCommand(args, ctx),
+  issue: (args, ctx) => issueCommand(args, ctx),
+  api: (args, ctx) => apiCommand(args, ctx),
 };
 
 export async function main(options: { argv?: string[]; stdout?: { write: (chunk: string) => unknown } } = {}) {
