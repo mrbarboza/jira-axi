@@ -73,7 +73,7 @@ export async function runIssueSearch(
   const fields = await loadFields(site);
   const client = new JiraClient({ site });
   const allowlist = withEpicField(BASE_FIELDS, fields);
-  const response = (await client.get("/rest/api/3/search", {
+  const response = (await client.get("/rest/api/3/search/jql", {
     jql,
     fields: allowlist.join(","),
     maxResults: limit,
@@ -198,7 +198,7 @@ async function issueTree(args: string[], site: SiteContext): Promise<string> {
 }
 
 async function fetchTreeLevel(client: JiraClient, jql: string): Promise<TreeNode[]> {
-  const response = (await client.get("/rest/api/3/search", {
+  const response = (await client.get("/rest/api/3/search/jql", {
     jql,
     fields: "summary,status",
     maxResults: 100,
@@ -207,7 +207,7 @@ async function fetchTreeLevel(client: JiraClient, jql: string): Promise<TreeNode
 }
 
 async function fetchTreeLevelWithParent(client: JiraClient, jql: string): Promise<TreeNodeWithParent[]> {
-  const response = (await client.get("/rest/api/3/search", {
+  const response = (await client.get("/rest/api/3/search/jql", {
     jql,
     fields: "summary,status,parent",
     maxResults: 100,

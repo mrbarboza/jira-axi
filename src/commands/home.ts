@@ -33,15 +33,23 @@ export async function homeCommand(_args: string[], site: SiteContext | undefined
   return toon.combine(...lines);
 }
 
-async function tryCountMyOpenIssues(site: SiteContext): Promise<number | undefined> {
+const OPEN_COUNT_CAP = 100;
+
+/**
+ * Jira's search API dropped the `total` field when it moved from
+ * /rest/api/3/search to /rest/api/3/search/jql (maxResults: 0 is no longer
+ * even accepted). One capped page plus `isLast` is enough for a dashboard
+ * hint — exact counts past the cap aren't worth a second round-trip here.
+ */
+async function tryCountMyOpenIssues(site: SiteContext): Promise<string | undefined> {
   try {
     const client = new JiraClient({ site });
-    const response = (await client.get("/rest/api/3/search", {
+    const response = (await client.get("/rest/api/3/search/jql", {
       jql: "assignee = currentUser() AND statusCategory != Done",
       fields: "key",
-      maxResults: 0,
-    })) as { total: number };
-    return response.total;
+      maxResults: OPEN_COUNT_CAP,
+    })) as { issues: unknown[]; isLast: boolean };
+    return response.isLast ? String(response.issues.length) : `${response.issues.length}+`;
   } catch {
     // Dashboard is best-effort live data; a transient auth/network failure
     // here shouldn't block showing the rest of the dashboard.
