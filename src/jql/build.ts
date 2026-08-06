@@ -48,3 +48,10 @@ export function buildJql(options: JqlOptions): JqlResult {
 function quote(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`;
 }
+
+/** Compile a free-text search into JQL's `text ~` clause, optionally scoped to a project. */
+export function buildTextSearchJql(text: string, project?: string): JqlResult {
+  const clauses = [`text ~ ${quote(text)}`];
+  if (project) clauses.push(`project = ${quote(project)}`);
+  return { jql: `${clauses.join(" AND ")} ORDER BY updated DESC`, source: "built" };
+}

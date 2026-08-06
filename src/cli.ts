@@ -10,6 +10,11 @@ import { setupCommand, SETUP_HELP } from "./commands/setup.js";
 import { userCommand, USER_HELP } from "./commands/user.js";
 import { issueCommand, ISSUE_HELP } from "./commands/issue.js";
 import { apiCommand, API_HELP } from "./commands/api.js";
+import { sprintCommand, SPRINT_HELP } from "./commands/sprint.js";
+import { boardCommand, BOARD_HELP } from "./commands/board.js";
+import { projectCommand, PROJECT_HELP } from "./commands/project.js";
+import { filterCommand, FILTER_HELP } from "./commands/filter.js";
+import { searchCommand, SEARCH_HELP } from "./commands/search.js";
 
 export const DESCRIPTION =
   "Agent-ergonomic CLI for Jira Cloud — token-efficient TOON output, pre-computed aggregates. Read-only v1.";
@@ -17,7 +22,7 @@ export const DESCRIPTION =
 const VERSION = readPackageVersion();
 
 export const TOP_HELP = `usage: jira-axi [command] [args] [flags]
-commands[5]: (none)=dashboard, site, setup, user, issue, api
+commands[10]: (none)=dashboard, site, setup, user, issue, sprint, board, project, filter, search, api
 global: --site <alias|host> on any command, overriding JIRA_AXI_SITE / .jira-axi.json / default site
 examples:
   jira-axi
@@ -25,6 +30,7 @@ examples:
   echo -n "<api-token>" | jira-axi setup auth --site work --email you@example.com
   jira-axi user whoami
   jira-axi issue list --mine
+  jira-axi sprint current --project PROJ
 `;
 
 const COMMAND_HELP: Record<string, string> = {
@@ -32,6 +38,11 @@ const COMMAND_HELP: Record<string, string> = {
   setup: SETUP_HELP,
   user: USER_HELP,
   issue: ISSUE_HELP,
+  sprint: SPRINT_HELP,
+  board: BOARD_HELP,
+  project: PROJECT_HELP,
+  filter: FILTER_HELP,
+  search: SEARCH_HELP,
   api: API_HELP,
 };
 
@@ -40,6 +51,11 @@ const COMMANDS: Record<string, AxiCliCommand<SiteContext | undefined>> = {
   setup: (args) => setupCommand(args),
   user: (args, ctx) => userCommand(args, ctx),
   issue: (args, ctx) => issueCommand(args, ctx),
+  sprint: (args, ctx) => sprintCommand(args, ctx),
+  board: (args, ctx) => boardCommand(args, ctx),
+  project: (args, ctx) => projectCommand(args, ctx),
+  filter: (args, ctx) => filterCommand(args, ctx),
+  search: (args, ctx) => searchCommand(args, ctx),
   api: (args, ctx) => apiCommand(args, ctx),
 };
 
