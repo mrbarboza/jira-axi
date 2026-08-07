@@ -1,25 +1,20 @@
 import { execFileSync } from "node:child_process";
-import { missingTokenError } from "./errors.js";
 
 function serviceName(host: string): string {
   return `jira-axi:${host}`;
 }
 
-/** Reads the stored API token for a site, or throws if none is set. */
-export function getToken(host: string): string {
-  try {
-    return execFileSync(
-      "security",
-      ["find-generic-password", "-s", serviceName(host), "-a", host, "-w"],
-      { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] },
-    ).trim();
-  } catch {
-    throw missingTokenError(host);
-  }
+/** Reads the stored secret for a site, or throws if none is set. Callers treat any throw as "no secret". */
+export function readSecret(host: string): string {
+  return execFileSync(
+    "security",
+    ["find-generic-password", "-s", serviceName(host), "-a", host, "-w"],
+    { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] },
+  ).trim();
 }
 
-/** Stores (or replaces) the API token for a site. Never logs the value. */
-export function setToken(host: string, token: string): void {
+/** Stores (or replaces) the secret for a site. Never logs the value. */
+export function writeSecret(host: string, value: string): void {
   // -U updates in place if an item with this service+account already exists.
   execFileSync("security", [
     "add-generic-password",
@@ -28,14 +23,14 @@ export function setToken(host: string, token: string): void {
     "-a",
     host,
     "-w",
-    token,
+    value,
     "-U",
   ]);
 }
 
-export function hasToken(host: string): boolean {
+export function hasSecret(host: string): boolean {
   try {
-    getToken(host);
+    readSecret(host);
     return true;
   } catch {
     return false;

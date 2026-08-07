@@ -1,19 +1,20 @@
+import open from "open";
 import { AxiError, installSessionStartHooks } from "axi-sdk-js";
 import { getFlag, hasFlag } from "../args.js";
 import { resolveSite } from "../context.js";
-import { setToken } from "../keychain.js";
-import { setSiteEmail } from "../site-registry.js";
-import { isStdinTTY, readStdin } from "../stdin.js";
+import { buildAuthorizeUrl, exchangeCodeForToken, fetchAccessibleResources, listenForCallback, randomState } from "../oauth.js";
+import { saveSession } from "../oauth-store.js";
+import { cloudIdResolutionError } from "../errors.js";
 import * as toon from "../toon.js";
 
 export const SETUP_HELP = `usage: jira-axi setup <subcommand> [flags]
 subcommands[3]:
-  auth --site <alias> --email <you@example.com>   # token piped via stdin
-  hooks                                            # install the SessionStart hook
-  skill --check                                    # check whether the skill doc is stale
+  auth --site <alias>    # opens a browser to authorize this site
+  hooks                   # install the SessionStart hook
+  skill --check           # check whether the skill doc is stale
 examples:
   jira-axi site add work acme.atlassian.net
-  echo -n "<api-token>" | jira-axi setup auth --site work --email you@example.com
+  jira-axi setup auth --site work
   jira-axi setup hooks
 `;
 
@@ -35,32 +36,46 @@ export async function setupCommand(args: string[]): Promise<string> {
 
 async function setupAuth(args: string[]): Promise<string> {
   const siteFlag = getFlag(args, "--site");
-  const email = getFlag(args, "--email");
   const site = resolveSite(siteFlag);
 
-  if (!email) {
-    throw new AxiError("--email is required: Jira Cloud Basic Auth needs the account email", "VALIDATION_ERROR", [
-      `Run \`jira-axi setup auth --site ${site.alias ?? site.host} --email <you@example.com>\``,
-    ]);
+  const state = randomState();
+  const callbackPromise = listenForCallback(state, site.host);
+  await openBrowserOrPrintUrl(buildAuthorizeUrl(state).toString());
+  const { code } = await callbackPromise;
+
+  const exchanged = await exchangeCodeForToken(code);
+  const resources = await fetchAccessibleResources(exchanged.accessToken);
+  const matched = resources.find((r) => new URL(r.url).host === site.host);
+  if (!matched) {
+    throw cloudIdResolutionError(
+      site.host,
+      resources.map((r) => new URL(r.url).host),
+    );
   }
 
-  if (isStdinTTY()) {
-    throw new AxiError("API token must be piped via stdin, never passed as a flag", "VALIDATION_ERROR", [
-      `echo -n "<api-token>" | jira-axi setup auth --site ${site.alias ?? site.host} --email ${email}`,
-    ]);
-  }
-  const token = (await readStdin()).trim();
-  if (token.length === 0) {
-    throw new AxiError("empty token read from stdin", "VALIDATION_ERROR");
-  }
-
-  setToken(site.host, token);
-  if (site.alias) setSiteEmail(site.alias, email);
+  saveSession(site.host, {
+    version: 1,
+    accessToken: exchanged.accessToken,
+    refreshToken: exchanged.refreshToken,
+    accessTokenExpiresAt: Date.now() + exchanged.expiresIn * 1000,
+    cloudId: matched.id,
+    scope: exchanged.scope,
+  });
 
   return toon.combine(
     toon.pair("authenticated", site.host),
+    toon.pair("cloudId", matched.id),
     toon.help([`Run \`jira-axi user whoami --site ${site.alias ?? site.host}\` to confirm`]),
   );
+}
+
+/** Opens the system browser; falls back to printing the URL for headless/SSH sessions where launch fails. */
+async function openBrowserOrPrintUrl(url: string): Promise<void> {
+  try {
+    await open(url);
+  } catch {
+    process.stderr.write(`Open this URL to authorize jira-axi:\n${url}\n`);
+  }
 }
 
 function setupHooks(): string {

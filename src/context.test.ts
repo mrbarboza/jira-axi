@@ -38,7 +38,7 @@ describe("resolveSite precedence", () => {
   it("falls back to the registry's defaultSite", () => {
     writeConfig({ sites: { work: { host: "acme.atlassian.net" } }, defaultSite: "work" });
     const site = resolveSite(undefined, homeDir);
-    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", email: undefined, source: "default" });
+    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", source: "default" });
   });
 
   it("prefers JIRA_AXI_SITE over the registry default", () => {
@@ -48,7 +48,7 @@ describe("resolveSite precedence", () => {
     });
     process.env.JIRA_AXI_SITE = "personal";
     const site = resolveSite(undefined, homeDir);
-    expect(site).toEqual({ host: "side.atlassian.net", alias: "personal", email: undefined, source: "env" });
+    expect(site).toEqual({ host: "side.atlassian.net", alias: "personal", source: "env" });
   });
 
   it("prefers JIRA_AXI_SITE over a nearby .jira-axi.json", () => {
@@ -62,7 +62,7 @@ describe("resolveSite precedence", () => {
     writeFileSync(join(projectDir, ".jira-axi.json"), JSON.stringify({ site: "work" }));
 
     const site = resolveSite(undefined, projectDir);
-    expect(site).toEqual({ host: "side.atlassian.net", alias: "personal", email: undefined, source: "env" });
+    expect(site).toEqual({ host: "side.atlassian.net", alias: "personal", source: "env" });
     rmSync(projectDir, { recursive: true, force: true });
   });
 
@@ -76,7 +76,7 @@ describe("resolveSite precedence", () => {
     writeFileSync(join(projectDir, ".jira-axi.json"), JSON.stringify({ site: "work" }));
 
     const site = resolveSite(undefined, projectDir);
-    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", email: undefined, source: "project" });
+    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", source: "project" });
     rmSync(projectDir, { recursive: true, force: true });
   });
 
@@ -88,7 +88,7 @@ describe("resolveSite precedence", () => {
     process.env.JIRA_AXI_SITE = "personal";
 
     const site = resolveSite("work", homeDir);
-    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", email: undefined, source: "flag" });
+    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", source: "flag" });
   });
 
   it("throws for an unregistered alias or host", () => {
@@ -99,7 +99,7 @@ describe("resolveSite precedence", () => {
   it("resolves a bare host if it matches a registered alias's host", () => {
     writeConfig({ sites: { work: { host: "acme.atlassian.net" } }, defaultSite: "work" });
     const site = resolveSite("acme.atlassian.net", homeDir);
-    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", email: undefined, source: "flag" });
+    expect(site).toEqual({ host: "acme.atlassian.net", alias: "work", source: "flag" });
   });
 
   it("walks up from a nested cwd to find the nearest .jira-axi.json", () => {

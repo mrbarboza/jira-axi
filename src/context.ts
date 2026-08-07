@@ -13,8 +13,6 @@ export interface SiteContext {
   host: string;
   /** Alias this host is registered under, when resolved through the registry. */
   alias?: string;
-  /** Atlassian account email, required for Basic Auth against Jira Cloud. */
-  email?: string;
   source: SiteSource;
 }
 
@@ -54,13 +52,13 @@ function toContext(aliasOrHost: string, source: SiteSource): SiteContext {
   const config = readConfig();
   const entry = config.sites[aliasOrHost];
   if (entry) {
-    return { host: entry.host, alias: aliasOrHost, email: entry.email, source };
+    return { host: entry.host, alias: aliasOrHost, source };
   }
   // Not a registered alias — treat as a bare host only if it looks like one
   // and is already registered under some alias; otherwise it's unknown.
   const matchingAlias = Object.entries(config.sites).find(([, v]) => v.host === aliasOrHost);
   if (matchingAlias) {
-    return { host: aliasOrHost, alias: matchingAlias[0], email: matchingAlias[1].email, source };
+    return { host: aliasOrHost, alias: matchingAlias[0], source };
   }
   throw unknownSiteError(aliasOrHost);
 }

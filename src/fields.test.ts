@@ -5,7 +5,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadFields, type FieldCacheFile } from "./fields.js";
 import type { SiteContext } from "./context.js";
 
-vi.mock("./keychain.js", () => ({ getToken: () => "fake-token" }));
+vi.mock("./oauth-store.js", () => ({
+  getSession: (host: string) => ({
+    version: 1,
+    accessToken: "fake-token",
+    refreshToken: "fake-refresh",
+    accessTokenExpiresAt: Date.now() + 60 * 60 * 1000,
+    cloudId: `cloud-${host}`,
+    scope: "read:jira-work",
+  }),
+  saveSession: () => {},
+}));
 
 let homeDir: string;
 let originalHome: string | undefined;
@@ -48,7 +58,7 @@ describe("loadFields cache discard", () => {
     const fetchSpy = vi.fn();
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
-    const site: SiteContext = { host, email: "me@example.com", source: "flag" };
+    const site: SiteContext = { host, source: "flag" };
     const result = await loadFields(site);
 
     expect(result).toEqual(cached);
@@ -71,7 +81,7 @@ describe("loadFields cache discard", () => {
     });
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
-    const site: SiteContext = { host: requestedHost, email: "me@example.com", source: "flag" };
+    const site: SiteContext = { host: requestedHost, source: "flag" };
     const result = await loadFields(site);
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);

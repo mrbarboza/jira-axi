@@ -1,5 +1,5 @@
 import type { SiteContext } from "../context.js";
-import { hasToken } from "../keychain.js";
+import { hasSession } from "../oauth-store.js";
 import { JiraClient } from "../client.js";
 import * as toon from "../toon.js";
 
@@ -11,14 +11,14 @@ export async function homeCommand(_args: string[], site: SiteContext | undefined
     );
   }
 
-  const authenticated = hasToken(site.host);
+  const authenticated = hasSession(site.host);
   const lines = [
     toon.pair("site", `${site.alias ?? site.host} (${site.host})`),
     toon.pair("authenticated", authenticated),
   ];
 
   if (!authenticated) {
-    lines.push(toon.help([`Run \`jira-axi setup auth --site ${site.alias ?? site.host} --email <you@example.com>\``]));
+    lines.push(toon.help([`Run \`jira-axi setup auth --site ${site.alias ?? site.host}\``]));
     return toon.combine(...lines);
   }
 

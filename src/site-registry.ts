@@ -5,12 +5,6 @@ import { AxiError } from "axi-sdk-js";
 
 export interface SiteEntry {
   host: string;
-  /**
-   * Atlassian account email for this site. Not a secret — Jira Cloud Basic
-   * Auth requires `email:api_token`, so this rides alongside the host in the
-   * registry while the token itself stays in the keychain.
-   */
-  email?: string;
 }
 
 export interface SiteRegistryConfig {
@@ -41,19 +35,6 @@ export function addSite(alias: string, host: string): SiteRegistryConfig {
   const config = readConfig();
   config.sites[alias] = { host };
   if (!config.defaultSite) config.defaultSite = alias;
-  writeConfig(config);
-  return config;
-}
-
-export function setSiteEmail(alias: string, email: string): SiteRegistryConfig {
-  const config = readConfig();
-  const entry = config.sites[alias];
-  if (!entry) {
-    throw new AxiError(`no site registered under alias "${alias}"`, "SITE_NOT_FOUND", [
-      "Run `jira-axi site list` to see registered sites",
-    ]);
-  }
-  entry.email = email;
   writeConfig(config);
   return config;
 }

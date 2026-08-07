@@ -27,7 +27,7 @@ global: --site <alias|host> on any command, overriding JIRA_AXI_SITE / .jira-axi
 examples:
   jira-axi
   jira-axi site add work acme.atlassian.net
-  echo -n "<api-token>" | jira-axi setup auth --site work --email you@example.com
+  jira-axi setup auth --site work
   jira-axi user whoami
   jira-axi issue list --mine
   jira-axi sprint current --project PROJ

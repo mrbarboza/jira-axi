@@ -1,6 +1,7 @@
 import { AxiError } from "axi-sdk-js";
 import { getPositional } from "../args.js";
 import { addSite, readConfig, removeSite, useSite } from "../site-registry.js";
+import { hasSession } from "../oauth-store.js";
 import * as toon from "../toon.js";
 
 export const SITE_HELP = `usage: jira-axi site <subcommand> [args]
@@ -35,7 +36,7 @@ function listSites(): string {
   const rows = Object.entries(config.sites).map(([alias, entry]) => ({
     alias,
     host: entry.host,
-    email: entry.email ?? "(not set)",
+    authenticated: hasSession(entry.host),
     default: alias === config.defaultSite,
   }));
   if (rows.length === 0) {
@@ -46,7 +47,7 @@ function listSites(): string {
   }
   return toon.combine(
     toon.table("sites", rows),
-    toon.help(["Run `jira-axi setup auth --site <alias> --email <you@example.com>` to authenticate a site"]),
+    toon.help(["Run `jira-axi setup auth --site <alias>` to authenticate a site"]),
   );
 }
 
@@ -59,7 +60,7 @@ function addSiteCommand(args: string[]): string {
   addSite(alias, host);
   return toon.combine(
     toon.pair("added", `${alias} -> ${host}`),
-    toon.help([`Run \`jira-axi setup auth --site ${alias} --email <you@example.com>\` to authenticate`]),
+    toon.help([`Run \`jira-axi setup auth --site ${alias}\` to authenticate`]),
   );
 }
 

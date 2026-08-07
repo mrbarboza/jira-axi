@@ -1,11 +1,13 @@
-import { getToken } from "./keychain.js";
+import { getSession, saveSession, type OAuthSession } from "./oauth-store.js";
+import { refreshAccessToken } from "./oauth.js";
 import {
   authRejectedError,
   forbiddenError,
   httpError,
   issueNotFoundError,
   jqlError,
-  missingEmailError,
+  noOAuthSessionError,
+  refreshFailedError,
 } from "./errors.js";
 import type { SiteContext } from "./context.js";
 
@@ -17,47 +19,91 @@ export interface JiraClientOptions {
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_RETRIES = 2;
+const REFRESH_SKEW_MS = 60_000;
 
 export class JiraClient {
   private readonly host: string;
-  private readonly email: string;
   private readonly timeoutMs: number;
   private readonly retries: number;
+  private cloudId: string | undefined;
 
   constructor(options: JiraClientOptions) {
     this.host = options.site.host;
-    if (!options.site.email) throw missingEmailError(this.host);
-    this.email = options.site.email;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.retries = options.retries ?? DEFAULT_RETRIES;
   }
 
   /** GET a REST v3 path (e.g. "/rest/api/3/myself"), decoded JSON on success. */
   async get(path: string, query?: Record<string, string | number | undefined>): Promise<unknown> {
-    const url = new URL(path, `https://${this.host}`);
+    const cloudId = await this.ensureCloudId();
+    // path always starts with "/" (e.g. "/rest/api/3/myself"); a leading "/"
+    // in URL's second-arg resolution would reset to the origin root and
+    // drop the /ex/jira/{cloudId} base path, so build the absolute URL directly.
+    const url = new URL(`https://api.atlassian.com/ex/jira/${cloudId}${path}`);
     for (const [key, value] of Object.entries(query ?? {})) {
       if (value !== undefined) url.searchParams.set(key, String(value));
     }
     return this.request(url);
   }
 
-  private async request(url: URL, attempt = 0): Promise<unknown> {
-    const token = getToken(this.host);
+  private async ensureCloudId(): Promise<string> {
+    if (this.cloudId) return this.cloudId;
+    const session = getSession(this.host);
+    if (!session) throw noOAuthSessionError(this.host);
+    this.cloudId = session.cloudId;
+    return this.cloudId;
+  }
+
+  private async getValidAccessToken(): Promise<string> {
+    const session = getSession(this.host);
+    if (!session) throw noOAuthSessionError(this.host);
+    if (Date.now() < session.accessTokenExpiresAt - REFRESH_SKEW_MS) {
+      return session.accessToken;
+    }
+    return this.refreshAndPersist(session);
+  }
+
+  private async refreshAndPersist(session: OAuthSession): Promise<string> {
+    let refreshed;
+    try {
+      refreshed = await refreshAccessToken(session.refreshToken);
+    } catch {
+      throw refreshFailedError(this.host);
+    }
+    const next: OAuthSession = {
+      ...session,
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken,
+      accessTokenExpiresAt: Date.now() + refreshed.expiresIn * 1000,
+    };
+    saveSession(this.host, next);
+    return next.accessToken;
+  }
+
+  private async request(url: URL, attempt = 0, hasRetriedAuth = false): Promise<unknown> {
+    const accessToken = await this.getValidAccessToken();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Basic ${Buffer.from(`${this.email}:${token}`).toString("base64")}`,
+          Authorization: `Bearer ${accessToken}`,
           Accept: "application/json",
         },
         signal: controller.signal,
       });
+      if (response.status === 401 && !hasRetriedAuth) {
+        const session = getSession(this.host);
+        if (session) {
+          await this.refreshAndPersist(session);
+          return this.request(url, attempt, true);
+        }
+      }
       return await this.handleResponse(response, url);
     } catch (error) {
       if (attempt < this.retries && isRetryable(error)) {
-        return this.request(url, attempt + 1);
+        return this.request(url, attempt + 1, hasRetriedAuth);
       }
       throw error;
     } finally {

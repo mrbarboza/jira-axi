@@ -18,22 +18,49 @@ export function unknownSiteError(aliasOrHost: string): AxiError {
   ]);
 }
 
-export function missingEmailError(host: string): AxiError {
-  return new AxiError(`no account email stored for ${host}`, "AUTH_MISSING", [
-    `Run \`jira-axi setup auth --site ${host} --email <you@example.com>\` to store one`,
-  ]);
-}
-
-export function missingTokenError(host: string): AxiError {
-  return new AxiError(`no API token stored for ${host}`, "AUTH_MISSING", [
-    `Run \`jira-axi setup auth --site ${host}\` to store one`,
+export function noOAuthSessionError(host: string): AxiError {
+  return new AxiError(`no OAuth session for ${host}`, "AUTH_MISSING", [
+    `Run \`jira-axi setup auth --site ${host}\` to authenticate`,
   ]);
 }
 
 export function authRejectedError(host: string): AxiError {
-  return new AxiError(`Jira rejected the API token for ${host} (401)`, "AUTH_REJECTED", [
-    `Run \`jira-axi setup auth --site ${host}\` to store a fresh token`,
+  return new AxiError(`Jira rejected the access token for ${host} (401)`, "AUTH_REJECTED", [
+    `Run \`jira-axi setup auth --site ${host}\` to re-authenticate`,
   ]);
+}
+
+export function oauthDeniedError(host: string): AxiError {
+  return new AxiError(`Jira Cloud authorization for ${host} was denied`, "AUTH_DENIED", [
+    `Run \`jira-axi setup auth --site ${host}\` again and click "Allow" to authenticate`,
+  ]);
+}
+
+export function oauthCallbackTimeoutError(host: string): AxiError {
+  return new AxiError(`timed out waiting for the OAuth redirect for ${host}`, "AUTH_TIMEOUT", [
+    `Run \`jira-axi setup auth --site ${host}\` again and complete the browser prompt promptly`,
+  ]);
+}
+
+export function oauthStateMismatchError(): AxiError {
+  return new AxiError("OAuth callback state did not match: possible stray or forged request", "AUTH_STATE_MISMATCH");
+}
+
+export function refreshFailedError(host: string): AxiError {
+  return new AxiError(
+    `Jira rejected the refresh token for ${host}: the session may have expired after 90 days of inactivity or been revoked`,
+    "AUTH_REFRESH_FAILED",
+    [`Run \`jira-axi setup auth --site ${host}\` to authenticate again`],
+  );
+}
+
+export function cloudIdResolutionError(host: string, availableHosts: string[]): AxiError {
+  const available = availableHosts.length > 0 ? availableHosts.join(", ") : "(none)";
+  return new AxiError(
+    `authorized account has no access to ${host} (accessible sites: ${available})`,
+    "CLOUD_ID_NOT_FOUND",
+    ["Confirm you approved access to the right site on the consent screen"],
+  );
 }
 
 export function forbiddenError(host: string): AxiError {
