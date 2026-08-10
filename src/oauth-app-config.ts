@@ -6,8 +6,8 @@
  * login. It is committed here rather than injected at build time because
  * hiding it would add moving parts without any confidentiality benefit.
  */
-export const CLIENT_ID = "REPLACE_WITH_REGISTERED_CLIENT_ID";
-export const CLIENT_SECRET = "REPLACE_WITH_REGISTERED_CLIENT_SECRET";
+export const CLIENT_ID = "fI4zUGgi4jZTfXgNp1UobLrfCa1M065L";
+export const CLIENT_SECRET = "ATOADfhTi9SouOB2RZKZ2blp25u4yNXsICEjaYuiJnotRJwWOxF_g47LwQRfc4Wj405f2580E92D";
 
 /** Must exactly match the redirect URI registered at developer.atlassian.com. */
 export const CALLBACK_PORT = 51703;
