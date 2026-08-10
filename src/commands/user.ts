@@ -1,6 +1,7 @@
 import { AxiError } from "axi-sdk-js";
 import type { SiteContext } from "../context.js";
 import { JiraClient } from "../client.js";
+import { missingSiteError } from "../errors.js";
 import * as toon from "../toon.js";
 
 export const USER_HELP = `usage: jira-axi user <subcommand>
@@ -21,7 +22,7 @@ interface JiraMyself {
 export async function userCommand(args: string[], site: SiteContext | undefined): Promise<string> {
   const [subcommand] = args;
   if (!site) {
-    throw new AxiError("no site resolved", "SITE_NOT_RESOLVED");
+    throw missingSiteError();
   }
   switch (subcommand) {
     case "whoami":

@@ -2,6 +2,7 @@ import { AxiError } from "axi-sdk-js";
 import { getFlag } from "../args.js";
 import type { SiteContext } from "../context.js";
 import { JiraClient } from "../client.js";
+import { missingSiteError } from "../errors.js";
 import { resolveBoardId } from "../agile.js";
 import { loadFields, fieldId } from "../fields.js";
 import * as toon from "../toon.js";
@@ -26,7 +27,7 @@ interface JiraSprint {
 export async function sprintCommand(args: string[], site: SiteContext | undefined): Promise<string> {
   const [subcommand, ...rest] = args;
   if (!site) {
-    throw new AxiError("no site resolved", "SITE_NOT_RESOLVED");
+    throw missingSiteError();
   }
   switch (subcommand) {
     case "current":

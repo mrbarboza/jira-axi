@@ -1,6 +1,7 @@
 import { AxiError } from "axi-sdk-js";
 import { getFlag, getPositional } from "../args.js";
 import type { SiteContext } from "../context.js";
+import { missingSiteError } from "../errors.js";
 import { buildTextSearchJql } from "../jql/build.js";
 import { runIssueSearch } from "./issue.js";
 
@@ -12,7 +13,7 @@ examples:
 
 export async function searchCommand(args: string[], site: SiteContext | undefined): Promise<string> {
   if (!site) {
-    throw new AxiError("no site resolved", "SITE_NOT_RESOLVED");
+    throw missingSiteError();
   }
   const text = getPositional(args, 0);
   if (!text) {

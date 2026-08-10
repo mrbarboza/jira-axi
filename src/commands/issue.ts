@@ -2,6 +2,7 @@ import { AxiError } from "axi-sdk-js";
 import { getFlag, getPositional, hasFlag } from "../args.js";
 import type { SiteContext } from "../context.js";
 import { JiraClient } from "../client.js";
+import { missingSiteError } from "../errors.js";
 import { loadFields, fieldId } from "../fields.js";
 import { normalizeIssue, type JiraIssue } from "../normalize/issue.js";
 import { buildJql } from "../jql/build.js";
@@ -29,7 +30,7 @@ const DESCRIPTION_TRUNCATE_AT = 1500;
 export async function issueCommand(args: string[], site: SiteContext | undefined): Promise<string> {
   const [subcommand, ...rest] = args;
   if (!site) {
-    throw new AxiError("no site resolved", "SITE_NOT_RESOLVED");
+    throw missingSiteError();
   }
   switch (subcommand) {
     case "list":
