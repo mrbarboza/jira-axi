@@ -7,7 +7,7 @@ import {
   listenForCallback,
   refreshAccessToken,
 } from "./oauth.js";
-import { CLIENT_ID, REDIRECT_URI } from "./oauth-app-config.js";
+import { CLIENT_ID, OAUTH_PROXY_URL, REDIRECT_URI } from "./oauth-app-config.js";
 
 describe("buildAuthorizeUrl", () => {
   it("includes client_id, redirect_uri, scope, and state, with no PKCE params", () => {
@@ -28,7 +28,7 @@ describe("token endpoint calls", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("exchangeCodeForToken posts an authorization_code grant", async () => {
+  it("exchangeCodeForToken posts the code to the oauth proxy's /token/exchange endpoint", async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
       json: () =>
@@ -40,14 +40,12 @@ describe("token endpoint calls", () => {
 
     expect(result).toEqual({ accessToken: "at", refreshToken: "rt", expiresIn: 3600, scope: "read:jira-work" });
     const [url, init] = fetchSpy.mock.calls[0];
-    expect(url).toBe("https://auth.atlassian.com/oauth/token");
+    expect(url).toBe(`${OAUTH_PROXY_URL}/token/exchange`);
     const body = JSON.parse(init.body);
-    expect(body.grant_type).toBe("authorization_code");
-    expect(body.code).toBe("auth-code");
-    expect(body.client_id).toBe(CLIENT_ID);
+    expect(body).toEqual({ code: "auth-code" });
   });
 
-  it("refreshAccessToken posts a refresh_token grant", async () => {
+  it("refreshAccessToken posts the refresh token to the oauth proxy's /token/refresh endpoint", async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
       json: () =>
@@ -59,12 +57,13 @@ describe("token endpoint calls", () => {
 
     expect(result.accessToken).toBe("at2");
     expect(result.refreshToken).toBe("rt2");
-    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
-    expect(body.grant_type).toBe("refresh_token");
-    expect(body.refresh_token).toBe("old-refresh");
+    const [url, init] = fetchSpy.mock.calls[0];
+    expect(url).toBe(`${OAUTH_PROXY_URL}/token/refresh`);
+    const body = JSON.parse(init.body);
+    expect(body).toEqual({ refresh_token: "old-refresh" });
   });
 
-  it("throws when the token endpoint responds with a non-2xx status", async () => {
+  it("throws when the proxy responds with a non-2xx status", async () => {
     globalThis.fetch = vi
       .fn()
       .mockResolvedValue({ ok: false, status: 400, text: () => Promise.resolve("invalid_grant") }) as unknown as typeof fetch;

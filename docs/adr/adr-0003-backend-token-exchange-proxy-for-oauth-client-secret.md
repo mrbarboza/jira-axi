@@ -1,7 +1,7 @@
 # ADR-0003: Move the OAuth Client Secret Out of Public Source via a Backend Token-Exchange Proxy
 
 **Date:** 2026-08-10
-**Status:** Proposed
+**Status:** Accepted
 **Deciders:** Miguel Barboza
 
 ---
@@ -74,11 +74,19 @@ Refresh-token rotation is routed through the same proxy endpoint rather than dir
 | Public client / PKCE without a client secret | Still unavailable; ADR-0002's research on this is unchanged and was not revisited here. |
 | OAuth Device Authorization Grant (RFC 8628) | Still absent from Atlassian's OAuth documentation; unchanged from ADR-0002. |
 
+## Implementation
+
+The proxy lives at `proxy/`, a self-contained Node/TypeScript HTTP service with two endpoints (`/token/exchange`, `/token/refresh`) plus a `/healthz` check; see `proxy/README.md` for how it runs, tests, and deploys, and why a plain Node server was picked over a Cloudflare Worker.
+`src/oauth-app-config.ts` no longer declares `CLIENT_SECRET`; it declares `OAUTH_PROXY_URL` instead, overridable via `JIRA_AXI_OAUTH_PROXY_URL`.
+`src/oauth.ts`'s `exchangeCodeForToken` and `refreshAccessToken` now call the proxy's two endpoints instead of `https://auth.atlassian.com/oauth/token` directly; the proxy attaches `client_id`/`client_secret` server-side before forwarding to Atlassian.
+This supersedes PR #1, which would have committed the real secret into `src/oauth-app-config.ts` on the reasoning this ADR revises; PR #1 should be closed without merging.
+
 ## References
 
 - ADR-0002: Migrate Jira Cloud Auth to OAuth 2.0 (3LO) via One Shared App — `docs/adr/adr-0002-oauth-2-3lo-shared-app-for-jira-cloud-auth.md`
-- Current placeholder secret and its rationale comment: `src/oauth-app-config.ts`
-- Open PR affected by this decision: #1, "Wire real OAuth app credentials into oauth-app-config.ts"
+- Proxy implementation: `proxy/` (`proxy/README.md`, `proxy/src/server.ts`)
+- CLI call sites: `src/oauth-app-config.ts`, `src/oauth.ts`
+- Open PR superseded by this ADR's implementation: #1, "Wire real OAuth app credentials into oauth-app-config.ts"
 - Atlassian Marketplace Security Enforcement Policy: https://developer.atlassian.com/platform/marketplace/marketplace-security-enforcement-policy/
 - Atlassian Security guidelines for Marketplace apps: https://developer.atlassian.com/platform/marketplace/app-security-guidelines/
 - Atlassian: Managing your OAuth 2.0 (3LO) apps (distribution, sharing, and the review process that clears the "unreviewed app" warning): https://developer.atlassian.com/cloud/oauth/getting-started/managing-oauth-apps/

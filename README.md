@@ -6,7 +6,7 @@ v1 is read-only.
 
 Built to the [AXI](https://github.com/kunchenguid/axi) design principles: a plain CLI in place of an MCP server's standing tool-schema tax, with a small live-data hook at session start instead of a wall of tool descriptions.
 
-See [ADR-0001](docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md) for why this exists instead of the Atlassian MCP, and [ADR-0002](docs/adr/adr-0002-oauth-2-3lo-shared-app-for-jira-cloud-auth.md) for how authentication works.
+See [ADR-0001](docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md) for why this exists instead of the Atlassian MCP, [ADR-0002](docs/adr/adr-0002-oauth-2-3lo-shared-app-for-jira-cloud-auth.md) for how authentication works, and [ADR-0003](docs/adr/adr-0003-backend-token-exchange-proxy-for-oauth-client-secret.md) for how the OAuth `client_secret` is kept out of this repository via the token-exchange proxy in [`proxy/`](proxy/README.md).
 
 ## Install
 
@@ -44,6 +44,7 @@ Run `jira-axi --help` or `jira-axi <command> --help` for the full command list.
 
 - [ADR-0001: Build jira-axi as an AXI-Style CLI Instead of the Atlassian MCP](docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md)
 - [ADR-0002: Migrate Jira Cloud Auth to OAuth 2.0 (3LO) via One Shared App](docs/adr/adr-0002-oauth-2-3lo-shared-app-for-jira-cloud-auth.md)
+- [ADR-0003: Move the OAuth Client Secret Out of Public Source via a Backend Token-Exchange Proxy](docs/adr/adr-0003-backend-token-exchange-proxy-for-oauth-client-secret.md)
 
 ## License
 

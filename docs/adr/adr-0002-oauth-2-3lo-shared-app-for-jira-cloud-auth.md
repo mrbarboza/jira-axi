@@ -58,6 +58,13 @@ The maintainer registers the app at developer.atlassian.com, enables sharing so 
 - Server/Data Center Jira (which uses Basic Auth, cookie sessions, OAuth 1.0a, or Bearer PATs depending on version) is out of scope; jira-axi targets Jira Cloud only, and `SiteContext.host` is documented as a Cloud host.
 - This ADR does not change v1's read-only scope from ADR-0001; it only changes how a request authenticates, not what it is allowed to do.
 
+### Superseded in part by ADR-0003
+
+This ADR originally called for committing `client_id` and `client_secret` together in `src/oauth-app-config.ts`.
+ADR-0003 revisits that: `client_secret` now lives only as a runtime environment variable on a backend token-exchange proxy (`proxy/`), never in this repository's source or history.
+`client_id` is unaffected and stays committed here, since it is not a secret.
+Everything else this ADR decided — the shared app, the local redirect listener, `cloudId` resolution, Bearer-token requests, rotating refresh tokens in the keychain — is unchanged.
+
 ## Alternatives Considered
 
 | Option | Reason rejected |
@@ -71,6 +78,7 @@ The maintainer registers the app at developer.atlassian.com, enables sharing so 
 ## References
 
 - ADR-0001: Build jira-axi as an AXI-Style CLI Instead of the Atlassian MCP — `docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md`
+- ADR-0003: Move the OAuth Client Secret Out of Public Source via a Backend Token-Exchange Proxy — `docs/adr/adr-0003-backend-token-exchange-proxy-for-oauth-client-secret.md`
 - Atlassian OAuth 2.0 (3LO) apps: https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/
 - Decision review artifact (Lavish comparison, options A/B/C): `.lavish/jira-auth-oauth-tradeoffs.html`
 - Current implementation being replaced: `src/client.ts`, `src/context.ts`, `src/keychain.ts`
