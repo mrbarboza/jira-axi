@@ -1,7 +1,7 @@
 # ADR-0002: Migrate Jira Cloud Auth to OAuth 2.0 (3LO) via One Shared App
 
 **Date:** 2026-08-07
-**Status:** Proposed
+**Status:** Accepted
 **Deciders:** Miguel Barboza
 
 ---

@@ -1,0 +1,50 @@
+# jira-axi
+
+Agent-ergonomic CLI for Jira Cloud.
+It emits [TOON](https://github.com/toon-format/toon) instead of JSON, declares its schema once per table instead of once per record, and pre-computes the aggregates an agent would otherwise derive across several calls (`sprint current`, `issue tree`, and more).
+v1 is read-only.
+
+Built to the [AXI](https://github.com/kunchenguid/axi) design principles: a plain CLI in place of an MCP server's standing tool-schema tax, with a small live-data hook at session start instead of a wall of tool descriptions.
+
+See [ADR-0001](docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md) for why this exists instead of the Atlassian MCP, and [ADR-0002](docs/adr/adr-0002-oauth-2-3lo-shared-app-for-jira-cloud-auth.md) for how authentication works.
+
+## Install
+
+```sh
+npm install -g jira-axi
+```
+
+Requires Node.js 20+.
+
+## Quickstart
+
+```sh
+# Register a Jira Cloud site
+jira-axi site add work acme.atlassian.net
+
+# Authorize via OAuth 2.0 (3LO) — opens a browser, one click
+jira-axi setup auth --site work
+
+# Confirm who you're authenticated as
+jira-axi user whoami
+
+# Read
+jira-axi issue list --mine
+jira-axi sprint current --project PROJ
+```
+
+The target site resolves per invocation, in order: `--site`, `JIRA_AXI_SITE`, the nearest `./.jira-axi.json`, then `defaultSite` in `~/.jira-axi/config.json`.
+Run `jira-axi --help` or `jira-axi <command> --help` for the full command list.
+
+## Commands
+
+`site`, `setup`, `user`, `issue`, `sprint`, `board`, `project`, `filter`, `search`, `api`.
+
+## Design docs
+
+- [ADR-0001: Build jira-axi as an AXI-Style CLI Instead of the Atlassian MCP](docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md)
+- [ADR-0002: Migrate Jira Cloud Auth to OAuth 2.0 (3LO) via One Shared App](docs/adr/adr-0002-oauth-2-3lo-shared-app-for-jira-cloud-auth.md)
+
+## License
+
+[MIT](LICENSE)
