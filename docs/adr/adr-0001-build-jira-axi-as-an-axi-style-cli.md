@@ -1,7 +1,7 @@
 # ADR-0001: Build jira-axi as an AXI-Style CLI Instead of the Atlassian MCP
 
 **Date:** 2026-08-06
-**Status:** Proposed
+**Status:** Accepted
 **Deciders:** Miguel Barboza
 
 ---
