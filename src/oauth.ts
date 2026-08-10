@@ -1,10 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
-import { CALLBACK_PORT, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPES } from "./oauth-app-config.js";
+import { CALLBACK_PORT, CLIENT_ID, OAUTH_PROXY_URL, REDIRECT_URI, SCOPES } from "./oauth-app-config.js";
 import { oauthCallbackTimeoutError, oauthDeniedError, oauthStateMismatchError } from "./errors.js";
 
 const AUTHORIZE_URL = "https://auth.atlassian.com/authorize";
-const TOKEN_URL = "https://auth.atlassian.com/oauth/token";
 const ACCESSIBLE_RESOURCES_URL = "https://api.atlassian.com/oauth/token/accessible-resources";
 
 export function randomState(): string {
@@ -30,34 +29,27 @@ export interface TokenExchangeResult {
   scope: string;
 }
 
+/**
+ * Exchanges an authorization code for tokens via the ADR-0003 proxy, which
+ * holds the real `client_secret` server-side. The CLI itself never sees it.
+ */
 export async function exchangeCodeForToken(code: string): Promise<TokenExchangeResult> {
-  return postTokenEndpoint({
-    grant_type: "authorization_code",
-    client_id: CLIENT_ID,
-    client_secret: CLIENT_SECRET,
-    code,
-    redirect_uri: REDIRECT_URI,
-  });
+  return postProxyEndpoint("/token/exchange", { code });
 }
 
 export async function refreshAccessToken(refreshToken: string): Promise<TokenExchangeResult> {
-  return postTokenEndpoint({
-    grant_type: "refresh_token",
-    client_id: CLIENT_ID,
-    client_secret: CLIENT_SECRET,
-    refresh_token: refreshToken,
-  });
+  return postProxyEndpoint("/token/refresh", { refresh_token: refreshToken });
 }
 
-async function postTokenEndpoint(body: Record<string, string>): Promise<TokenExchangeResult> {
-  const response = await fetch(TOKEN_URL, {
+async function postProxyEndpoint(path: string, body: Record<string, string>): Promise<TokenExchangeResult> {
+  const response = await fetch(`${OAUTH_PROXY_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`Atlassian token endpoint returned ${response.status}: ${detail.slice(0, 200)}`);
+    throw new Error(`oauth proxy ${path} returned ${response.status}: ${detail.slice(0, 200)}`);
   }
   const json = (await response.json()) as {
     access_token: string;
