@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runAxiCli, type AxiCliCommand } from "axi-sdk-js";
+import { encode } from "@toon-format/toon";
+import { AxiError, exitCodeForError, runAxiCli, type AxiCliCommand } from "axi-sdk-js";
 import { getFlag } from "./args.js";
 import { resolveSite, type SiteContext } from "./context.js";
 import { homeCommand } from "./commands/home.js";
@@ -60,6 +61,22 @@ const COMMANDS: Record<string, AxiCliCommand<SiteContext | undefined>> = {
 };
 
 export async function main(options: { argv?: string[]; stdout?: { write: (chunk: string) => unknown } } = {}) {
+  const argv = options.argv ?? process.argv.slice(2);
+  const stdout = options.stdout ?? process.stdout;
+
+  // axi-sdk-js's `resolveContext` hook isn't wrapped in a try/catch, so a
+  // genuine unknown-site error thrown from it would crash instead of
+  // rendering like every other AxiError. Validate --site up front so that
+  // error is caught and rendered here before runAxiCli ever calls the hook.
+  try {
+    resolveSiteOrUndefined(getFlag(argv, "--site"));
+  } catch (error) {
+    if (!(error instanceof AxiError)) throw error;
+    stdout.write(`${renderAxiError(error)}\n`);
+    process.exitCode = exitCodeForError(error);
+    return;
+  }
+
   await runAxiCli<SiteContext | undefined>({
     ...(options.argv ? { argv: options.argv } : {}),
     description: DESCRIPTION,
@@ -73,14 +90,25 @@ export async function main(options: { argv?: string[]; stdout?: { write: (chunk:
   });
 }
 
-function resolveSiteOrUndefined(flagValue: string | undefined): SiteContext | undefined {
+function renderAxiError(error: AxiError): string {
+  const output: Record<string, unknown> = { error: error.message, code: error.code };
+  if (error.suggestions.length > 0) output.help = error.suggestions;
+  return encode(output);
+}
+
+export function resolveSiteOrUndefined(flagValue: string | undefined): SiteContext | undefined {
   try {
     return resolveSite(flagValue);
-  } catch {
-    // Commands that need a resolved site (e.g. `user whoami`) throw their own
-    // error when they see `undefined`; commands that don't (`site`, `setup`)
-    // work fine before any site is registered.
-    return undefined;
+  } catch (error) {
+    // Only swallow the "nothing configured at all" case: commands that need a
+    // resolved site throw their own missingSiteError() when they see
+    // `undefined`; commands that don't (`site`, `setup`) work fine before any
+    // site is registered. A genuine unknown-site error (bad --site value)
+    // must propagate with its specific suggestions.
+    if (error instanceof AxiError && error.code === "SITE_NOT_RESOLVED") {
+      return undefined;
+    }
+    throw error;
   }
 }
 
