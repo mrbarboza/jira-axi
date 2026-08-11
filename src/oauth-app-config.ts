@@ -8,7 +8,7 @@
  * sends the authorization code and refresh token to that proxy instead of
  * calling Atlassian's token endpoint directly. See `src/oauth.ts`.
  */
-export const CLIENT_ID = "REPLACE_WITH_REGISTERED_CLIENT_ID";
+export const CLIENT_ID = "fI4zUGgi4jZTfXgNp1UobLrfCa1M065L";
 
 /** Must exactly match the redirect URI registered at developer.atlassian.com. */
 export const CALLBACK_PORT = 51703;
@@ -23,4 +23,4 @@ export const SCOPES = "read:jira-work read:jira-user offline_access";
  * self-hosted instance.
  */
 export const OAUTH_PROXY_URL =
-  process.env.JIRA_AXI_OAUTH_PROXY_URL ?? "https://REPLACE_WITH_DEPLOYED_PROXY_HOST";
+  process.env.JIRA_AXI_OAUTH_PROXY_URL ?? "https://jira-axi.onrender.com";
