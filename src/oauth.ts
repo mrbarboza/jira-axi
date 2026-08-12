@@ -87,7 +87,7 @@ export interface CallbackResult {
   code: string;
 }
 
-const CALLBACK_TIMEOUT_MS = 120_000;
+const CALLBACK_TIMEOUT_MS = Number(process.env.JIRA_AXI_OAUTH_CALLBACK_TIMEOUT_MS) || 120_000;
 const CALLBACK_RESPONSE_HTML = "<html><body>Authorized. You can close this tab.</body></html>";
 const CALLBACK_ERROR_HTML = "<html><body>Authorization failed. You can close this tab.</body></html>";
 
