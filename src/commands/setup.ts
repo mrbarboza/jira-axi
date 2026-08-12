@@ -40,6 +40,7 @@ async function setupAuth(args: string[]): Promise<string> {
 
   const state = randomState();
   const callbackPromise = listenForCallback(state, site.host);
+  callbackPromise.catch(() => {});
   await openBrowserOrPrintUrl(buildAuthorizeUrl(state).toString());
   const { code } = await callbackPromise;
 

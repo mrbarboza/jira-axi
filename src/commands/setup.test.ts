@@ -2,6 +2,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AxiError } from "axi-sdk-js";
 
 const openMock = vi.fn().mockResolvedValue(undefined);
 vi.mock("open", () => ({ default: (...args: unknown[]) => openMock(...args) }));
@@ -11,10 +12,15 @@ const buildAuthorizeUrlMock = vi.fn().mockReturnValue(new URL("https://auth.atla
 const listenForCallbackMock = vi.fn();
 const exchangeCodeForTokenMock = vi.fn();
 const fetchAccessibleResourcesMock = vi.fn();
+// `listenForCallbackImpl` lets a test hand setup.ts a plain, un-instrumented promise:
+// vi.fn()'s own call-tracking attaches an internal `.then` to recorded return values,
+// which would mask the exact unhandled-rejection timing the crash regression test needs.
+let listenForCallbackImpl: (state: string, host: string) => Promise<{ code: string }> = (state, host) =>
+  listenForCallbackMock(state, host);
 vi.mock("../oauth.js", () => ({
   randomState: () => randomStateMock(),
   buildAuthorizeUrl: (state: string) => buildAuthorizeUrlMock(state),
-  listenForCallback: (state: string, host: string) => listenForCallbackMock(state, host),
+  listenForCallback: (state: string, host: string) => listenForCallbackImpl(state, host),
   exchangeCodeForToken: (code: string) => exchangeCodeForTokenMock(code),
   fetchAccessibleResources: (token: string) => fetchAccessibleResourcesMock(token),
 }));
@@ -43,6 +49,7 @@ beforeEach(() => {
   randomStateMock.mockClear();
   buildAuthorizeUrlMock.mockClear();
   listenForCallbackMock.mockReset();
+  listenForCallbackImpl = (state, host) => listenForCallbackMock(state, host);
   exchangeCodeForTokenMock.mockReset();
   fetchAccessibleResourcesMock.mockReset();
   saveSessionMock.mockReset();
@@ -92,6 +99,51 @@ describe("setup auth", () => {
 
     await expect(setupCommand(["auth", "--site", "work"])).rejects.toThrow(/acme\.atlassian\.net/);
     expect(saveSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("does not crash the process when the callback times out while still awaiting the browser open", async () => {
+    // Simulates the report's repro3 vs repro4 race: the callback promise rejects
+    // (timeout) while `setupAuth` is still awaiting `openBrowserOrPrintUrl`, i.e.
+    // before any `.catch`/`await` had a chance to attach a handler to it "naturally".
+    // Without a handler attached at creation time, this rejection would be a fatal
+    // unhandled rejection and kill the process instead of surfacing as an AxiError.
+    let openResolve = () => {};
+    openMock.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          openResolve = resolve;
+        }),
+    );
+
+    const timeoutError = new AxiError("timed out waiting for the OAuth redirect for acme.atlassian.net", "AUTH_TIMEOUT");
+    let rejectCallback = (_err: unknown) => {};
+    // Plain (non-vi.fn) promise: vi.fn()'s call-result tracking attaches its own `.then`
+    // to recorded return values, which would mask the unhandled-rejection timing below.
+    listenForCallbackImpl = () =>
+      new Promise((_resolve, reject) => {
+        rejectCallback = reject;
+      });
+
+    const unhandledRejections: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => unhandledRejections.push(reason);
+    process.on("unhandledRejection", onUnhandledRejection);
+
+    try {
+      const authPromise = setupCommand(["auth", "--site", "work"]);
+
+      // Fire the "timeout" while setupAuth is still stuck awaiting the browser-open step.
+      rejectCallback(timeoutError);
+      await new Promise((r) => setTimeout(r, 10));
+
+      // Now let the browser-open step resolve so setupAuth proceeds to `await callbackPromise`.
+      openResolve();
+
+      await expect(authPromise).rejects.toBe(timeoutError);
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
+
+    expect(unhandledRejections).toHaveLength(0);
   });
 
   it("falls back to printing the URL when the browser fails to open", async () => {
