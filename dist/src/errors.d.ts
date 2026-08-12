@@ -1,0 +1,15 @@
+import { AxiError } from "axi-sdk-js";
+export declare function missingSiteError(): AxiError;
+export declare function unknownSiteError(aliasOrHost: string): AxiError;
+export declare function noOAuthSessionError(host: string): AxiError;
+export declare function authRejectedError(host: string): AxiError;
+export declare function oauthDeniedError(host: string): AxiError;
+export declare function oauthCallbackTimeoutError(host: string): AxiError;
+export declare function oauthStateMismatchError(): AxiError;
+export declare function refreshFailedError(host: string): AxiError;
+export declare function cloudIdResolutionError(host: string, availableHosts: string[]): AxiError;
+export declare function forbiddenError(host: string): AxiError;
+export declare function jqlError(jql: string, detail: string): AxiError;
+export declare function issueNotFoundError(key: string): AxiError;
+export declare function httpError(status: number, host: string, body: string): AxiError;
+export declare function writeNotSupportedError(method: string): AxiError;
