@@ -1,13 +1,10 @@
 {
-  "name": "@mrbarboza/jira-axi",
+  "name": "jira-axi",
   "version": "0.1.0",
   "description": "AXI-style CLI for Jira Cloud — token-efficient TOON output, pre-computed aggregates, read-only v1",
   "type": "module",
   "bin": {
     "jira-axi": "./dist/bin/jira-axi.js"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "files": [
     "dist",
@@ -16,11 +13,11 @@
   ],
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "dev": "tsx bin/jira-axi.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint .",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint ."
   },
   "license": "MIT",
   "engines": {
