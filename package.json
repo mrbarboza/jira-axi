@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "prepare": "node -e \"\"",
     "dev": "tsx bin/jira-axi.ts",
     "test": "vitest run",
     "test:watch": "vitest",
