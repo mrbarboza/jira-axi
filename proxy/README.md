@@ -68,3 +68,5 @@ Whichever platform is used:
 - Point the CLI's proxy base URL at the deployed HTTPS origin.
 
 Redeploys are safe at any time: the service holds no state between requests, so restarting it only resets the in-memory rate-limit windows.
+
+For Render specifically, a `render.yaml` Blueprint at the repo root pins the build and start commands (`npm install && npm run build`, `npm start`) in source so they don't drift from a hand-edited dashboard value. If the dashboard's build command field is set manually, make sure it matches `render.yaml` - or leave it unset once Render auto-detects the blueprint.

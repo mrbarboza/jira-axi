@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: jira-axi-oauth-proxy
+    runtime: node
+    rootDir: proxy
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    healthCheckPath: /healthz
