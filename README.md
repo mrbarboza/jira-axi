@@ -36,6 +36,8 @@ jira-axi sprint current --project PROJ
 The target site resolves per invocation, in order: `--site`, `JIRA_AXI_SITE`, the nearest `./.jira-axi.json`, then `defaultSite` in `~/.jira-axi/config.json`.
 Run `jira-axi --help` or `jira-axi <command> --help` for the full command list.
 
+If you authorized before the Agile scopes (`read:board-scope:jira-software`, `read:sprint:jira-software`, `read:project:jira`) were added, `sprint`/`board` commands will 401 until you re-run `jira-axi setup auth --site <site>` to pick up the new scopes.
+
 ## Commands
 
 `site`, `setup`, `user`, `issue`, `sprint`, `board`, `project`, `filter`, `search`, `api`.
