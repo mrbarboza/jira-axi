@@ -77,6 +77,11 @@ describe("setup auth", () => {
     const result = await setupCommand(["auth", "--site", "work"]);
 
     expect(openMock).toHaveBeenCalled();
+    // Regression: `open(url, { wait: true })` blocks until the ENTIRE browser app
+    // quits (macOS `open --wait-apps`), not until the redirect completes, stalling
+    // setupAuth until the whole browser is closed. The browser launch must be
+    // fire-and-forget; callbackPromise is the real completion signal.
+    expect(openMock.mock.calls[0][1]).not.toEqual(expect.objectContaining({ wait: true }));
     expect(saveSessionMock).toHaveBeenCalledWith(
       "acme.atlassian.net",
       expect.objectContaining({ accessToken: "at", refreshToken: "rt", cloudId: "cloud-123" }),
