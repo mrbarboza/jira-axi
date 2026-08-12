@@ -71,10 +71,11 @@ async function setupAuth(args: string[]): Promise<string> {
 
 /** Opens the system browser; falls back to printing the URL for headless/SSH sessions where launch fails. */
 async function openBrowserOrPrintUrl(url: string): Promise<void> {
+  process.stderr.write(`Open this URL to authorize jira-axi:\n${url}\n`);
   try {
     await open(url, { wait: true });
   } catch {
-    process.stderr.write(`Open this URL to authorize jira-axi:\n${url}\n`);
+    // Browser failed to open; URL was already printed above.
   }
 }
 
