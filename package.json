@@ -12,8 +12,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
-    "prepare": "node -e \"\"",
+    "compile": "tsc",
     "dev": "tsx bin/jira-axi.ts",
     "test": "vitest run",
     "test:watch": "vitest",
