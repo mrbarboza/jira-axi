@@ -153,3 +153,50 @@ describe("GET /healthz", () => {
     });
   });
 });
+
+function getText(port: number, path: string): Promise<{ status: number; contentType: string | undefined; body: string }> {
+  return new Promise((resolve, reject) => {
+    const req = request({ host: "127.0.0.1", port, path, method: "GET" }, (r) => {
+      const chunks: Buffer[] = [];
+      r.on("data", (c) => chunks.push(c));
+      r.on("end", () =>
+        resolve({
+          status: r.statusCode ?? 0,
+          contentType: r.headers["content-type"],
+          body: Buffer.concat(chunks).toString("utf8"),
+        }),
+      );
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+describe("GET /privacy", () => {
+  it("returns the privacy policy as plain text", async () => {
+    const fetchSpy = vi.fn();
+    await withServer(fetchSpy as unknown as typeof fetch, async (port) => {
+      const res = await getText(port, "/privacy");
+      expect(res.status).toBe(200);
+      expect(res.contentType).toBe("text/plain");
+      expect(res.body).toMatch(/stores no user data server-side/);
+      expect(res.body).toMatch(/local OS keychain/);
+      expect(res.body).toMatch(/does not log|not log/);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe("GET /terms", () => {
+  it("returns the terms of service as plain text", async () => {
+    const fetchSpy = vi.fn();
+    await withServer(fetchSpy as unknown as typeof fetch, async (port) => {
+      const res = await getText(port, "/terms");
+      expect(res.status).toBe(200);
+      expect(res.contentType).toBe("text/plain");
+      expect(res.body).toMatch(/as is/i);
+      expect(res.body).toMatch(/without warranty/i);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+  });
+});
