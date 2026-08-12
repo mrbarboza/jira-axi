@@ -74,7 +74,7 @@ async function setupAuth(args: string[]): Promise<string> {
 async function openBrowserOrPrintUrl(url: string): Promise<void> {
   process.stderr.write(`Open this URL to authorize jira-axi:\n${url}\n`);
   try {
-    await open(url, { wait: true });
+    await open(url);
   } catch {
     // Browser failed to open; URL was already printed above.
   }
