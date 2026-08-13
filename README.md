@@ -11,7 +11,7 @@ See [ADR-0001](docs/adr/adr-0001-build-jira-axi-as-an-axi-style-cli.md) for why 
 ## Install
 
 ```sh
-npm install -g github:mrbarboza/jira-axi
+npm install -g github:mrbarboza/nu-jira-axi
 ```
 
 Requires Node.js 20+.
