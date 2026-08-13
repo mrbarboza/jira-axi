@@ -7,13 +7,13 @@ import { resolveBoardId } from "../agile.js";
 import { loadFields, fieldId } from "../fields.js";
 import * as toon from "../toon.js";
 
-export const SPRINT_HELP = `usage: jira-axi sprint <subcommand> [flags]
+export const SPRINT_HELP = `usage: nu-jira-axi sprint <subcommand> [flags]
 subcommands[2]:
   current [--board B] [--project K] [--fix-version V]   # active sprint + status/points rollup
   list --board B                       # all sprints on a board
 examples:
-  jira-axi sprint current --project PROJ
-  jira-axi sprint list --board 42
+  nu-jira-axi sprint current --project PROJ
+  nu-jira-axi sprint list --board 42
 `;
 
 interface JiraSprint {
@@ -36,7 +36,7 @@ export async function sprintCommand(args: string[], site: SiteContext | undefine
       return sprintList(rest, site);
     default:
       throw new AxiError(`unknown sprint subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-        "Run `jira-axi sprint --help` to see subcommands",
+        "Run `nu-jira-axi sprint --help` to see subcommands",
       ]);
   }
 }
@@ -55,7 +55,7 @@ async function sprintCurrent(args: string[], site: SiteContext): Promise<string>
   if (!sprint) {
     return toon.combine(
       toon.pair("sprint", "none active"),
-      toon.help(["Run `jira-axi sprint list --board " + boardId + "` to see all sprints on this board"]),
+      toon.help(["Run `nu-jira-axi sprint list --board " + boardId + "` to see all sprints on this board"]),
     );
   }
 
@@ -92,7 +92,7 @@ async function sprintCurrent(args: string[], site: SiteContext): Promise<string>
     ),
     toon.pair("totalStoryPoints", totalPoints),
     toon.pair("issueCount", issues.issues.length),
-    toon.help([`Run \`jira-axi issue list --jql "sprint = ${sprint.id}"\` to see the issues`]),
+    toon.help([`Run \`nu-jira-axi issue list --jql "sprint = ${sprint.id}"\` to see the issues`]),
   );
 }
 
@@ -112,6 +112,6 @@ async function sprintList(args: string[], site: SiteContext): Promise<string> {
   }));
   return toon.combine(
     toon.table("sprints", rows),
-    toon.help(["Run `jira-axi sprint current --board " + boardId + "` to see the active one"]),
+    toon.help(["Run `nu-jira-axi sprint current --board " + boardId + "` to see the active one"]),
   );
 }

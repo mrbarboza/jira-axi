@@ -24,7 +24,7 @@ describe("homeCommand", () => {
     vi.mocked(hasSession).mockReturnValue(false);
     const result = await homeCommand([], SITE);
     expect(result).toContain("authenticated");
-    expect(result).toContain("jira-axi setup auth --site work");
+    expect(result).toContain("nu-jira-axi setup auth --site work");
     expect(JiraClient).not.toHaveBeenCalled();
   });
 

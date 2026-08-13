@@ -7,18 +7,18 @@ export function issueListSuggestions(context) {
     if (context.count === 0) {
         return [
             "No issues matched. Try loosening the filter, e.g. drop --status or --sprint",
-            "Run `jira-axi issue list --jql \"<your JQL>\"` to run a custom query",
+            "Run `nu-jira-axi issue list --jql \"<your JQL>\"` to run a custom query",
         ];
     }
     return [
-        "Run `jira-axi issue view <KEY>` to see full detail on one issue",
-        "Run `jira-axi issue view <KEY> --comments` to include its comments",
+        "Run `nu-jira-axi issue view <KEY>` to see full detail on one issue",
+        "Run `nu-jira-axi issue view <KEY> --comments` to include its comments",
     ];
 }
 export function issueViewSuggestions(context) {
     return [
-        `Run \`jira-axi issue view ${context.key} --full\` to see the untruncated description`,
-        "Run `jira-axi issue list --mine` to go back to your open issues",
+        `Run \`nu-jira-axi issue view ${context.key} --full\` to see the untruncated description`,
+        "Run `nu-jira-axi issue list --mine` to go back to your open issues",
     ];
 }
 //# sourceMappingURL=suggestions.js.map

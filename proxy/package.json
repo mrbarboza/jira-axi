@@ -2,7 +2,7 @@
   "name": "jira-axi-oauth-proxy",
   "version": "0.1.0",
   "private": true,
-  "description": "Backend token-exchange proxy for jira-axi's shared Atlassian OAuth app (ADR-0003). Holds CLIENT_SECRET server-side; the CLI never sees it.",
+  "description": "Backend token-exchange proxy for nu-jira-axi's shared Atlassian OAuth app (ADR-0003). Holds CLIENT_SECRET server-side; the CLI never sees it.",
   "type": "module",
   "scripts": {
     "build": "tsc",

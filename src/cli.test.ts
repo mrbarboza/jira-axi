@@ -15,7 +15,7 @@ let originalEnvSite: string | undefined;
 let originalCwd: string;
 
 beforeEach(() => {
-  homeDir = mkdtempSync(join(tmpdir(), "jira-axi-home-"));
+  homeDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-home-"));
   originalHome = process.env.HOME;
   originalEnvSite = process.env.JIRA_AXI_SITE;
   originalCwd = process.cwd();

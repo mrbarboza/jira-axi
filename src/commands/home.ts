@@ -7,7 +7,7 @@ export async function homeCommand(_args: string[], site: SiteContext | undefined
   if (!site) {
     return toon.combine(
       toon.pair("site", "none resolved"),
-      toon.help(["Run `jira-axi site add <alias> <host>` to register a site"]),
+      toon.help(["Run `nu-jira-axi site add <alias> <host>` to register a site"]),
     );
   }
 
@@ -18,7 +18,7 @@ export async function homeCommand(_args: string[], site: SiteContext | undefined
   ];
 
   if (!authenticated) {
-    lines.push(toon.help([`Run \`jira-axi setup auth --site ${site.alias ?? site.host}\``]));
+    lines.push(toon.help([`Run \`nu-jira-axi setup auth --site ${site.alias ?? site.host}\``]));
     return toon.combine(...lines);
   }
 
@@ -27,7 +27,7 @@ export async function homeCommand(_args: string[], site: SiteContext | undefined
     lines.push(toon.pair("myOpenIssues", myOpenCount));
   }
   lines.push(
-    toon.help(["Run `jira-axi user whoami` to confirm auth", "Run `jira-axi issue list --mine` to see your issues"]),
+    toon.help(["Run `nu-jira-axi user whoami` to confirm auth", "Run `nu-jira-axi issue list --mine` to see your issues"]),
   );
 
   return toon.combine(...lines);

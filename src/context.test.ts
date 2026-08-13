@@ -9,7 +9,7 @@ let originalHome: string | undefined;
 let originalEnvSite: string | undefined;
 
 beforeEach(() => {
-  homeDir = mkdtempSync(join(tmpdir(), "jira-axi-home-"));
+  homeDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-home-"));
   originalHome = process.env.HOME;
   originalEnvSite = process.env.JIRA_AXI_SITE;
   process.env.HOME = homeDir;
@@ -58,7 +58,7 @@ describe("resolveSite precedence", () => {
     });
     process.env.JIRA_AXI_SITE = "personal";
 
-    const projectDir = mkdtempSync(join(tmpdir(), "jira-axi-project-"));
+    const projectDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-project-"));
     writeFileSync(join(projectDir, ".jira-axi.json"), JSON.stringify({ site: "work" }));
 
     const site = resolveSite(undefined, projectDir);
@@ -72,7 +72,7 @@ describe("resolveSite precedence", () => {
       defaultSite: "personal",
     });
 
-    const projectDir = mkdtempSync(join(tmpdir(), "jira-axi-project-"));
+    const projectDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-project-"));
     writeFileSync(join(projectDir, ".jira-axi.json"), JSON.stringify({ site: "work" }));
 
     const site = resolveSite(undefined, projectDir);
@@ -104,7 +104,7 @@ describe("resolveSite precedence", () => {
 
   it("walks up from a nested cwd to find the nearest .jira-axi.json", () => {
     writeConfig({ sites: { work: { host: "acme.atlassian.net" } }, defaultSite: "work" });
-    const projectDir = mkdtempSync(join(tmpdir(), "jira-axi-project-"));
+    const projectDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-project-"));
     writeFileSync(join(projectDir, ".jira-axi.json"), JSON.stringify({ site: "work" }));
     const nested = join(projectDir, "a", "b", "c");
     mkdirSync(nested, { recursive: true });

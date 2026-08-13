@@ -4,11 +4,11 @@ import { JiraClient } from "../client.js";
 import { missingSiteError } from "../errors.js";
 import * as toon from "../toon.js";
 
-export const USER_HELP = `usage: jira-axi user <subcommand>
+export const USER_HELP = `usage: nu-jira-axi user <subcommand>
 subcommands[1]:
   whoami
 examples:
-  jira-axi user whoami --site work
+  nu-jira-axi user whoami --site work
 `;
 
 interface JiraMyself {
@@ -29,7 +29,7 @@ export async function userCommand(args: string[], site: SiteContext | undefined)
       return whoami(site);
     default:
       throw new AxiError(`unknown user subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-        "Run `jira-axi user --help` to see subcommands",
+        "Run `nu-jira-axi user --help` to see subcommands",
       ]);
   }
 }
@@ -45,6 +45,6 @@ async function whoami(site: SiteContext): Promise<string> {
       active: me.active,
       site: site.host,
     }),
-    toon.help(["Run `jira-axi issue list --mine` to see your open issues"]),
+    toon.help(["Run `nu-jira-axi issue list --mine` to see your open issues"]),
   );
 }

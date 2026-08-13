@@ -22,7 +22,7 @@ let originalHome: string | undefined;
 let originalFetch: typeof fetch;
 
 beforeEach(() => {
-  homeDir = mkdtempSync(join(tmpdir(), "jira-axi-cache-"));
+  homeDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-cache-"));
   originalHome = process.env.HOME;
   process.env.HOME = homeDir;
   originalFetch = globalThis.fetch;

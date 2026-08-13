@@ -6,14 +6,14 @@ import { missingSiteError } from "../errors.js";
 import { loadFields } from "../fields.js";
 import * as toon from "../toon.js";
 
-export const PROJECT_HELP = `usage: jira-axi project <subcommand> <KEY>
+export const PROJECT_HELP = `usage: nu-jira-axi project <subcommand> <KEY>
 subcommands[3]:
   view <KEY>
   fields <KEY>
   types <KEY>
 examples:
-  jira-axi project view PROJ
-  jira-axi project types PROJ
+  nu-jira-axi project view PROJ
+  nu-jira-axi project types PROJ
 `;
 
 interface JiraProject {
@@ -31,7 +31,7 @@ export async function projectCommand(args: string[], site: SiteContext | undefin
   }
   const key = getPositional(rest, 0);
   if (!key) {
-    throw new AxiError("usage: jira-axi project <view|fields|types> <KEY>", "VALIDATION_ERROR");
+    throw new AxiError("usage: nu-jira-axi project <view|fields|types> <KEY>", "VALIDATION_ERROR");
   }
   switch (subcommand) {
     case "view":
@@ -42,7 +42,7 @@ export async function projectCommand(args: string[], site: SiteContext | undefin
       return projectTypes(site, key);
     default:
       throw new AxiError(`unknown project subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-        "Run `jira-axi project --help` to see subcommands",
+        "Run `nu-jira-axi project --help` to see subcommands",
       ]);
   }
 }
@@ -61,7 +61,7 @@ async function projectView(site: SiteContext, key: string): Promise<string> {
       type: project.projectTypeKey ?? "",
       lead: project.lead?.displayName ?? "",
     }),
-    toon.help([`Run \`jira-axi issue list --project ${project.key}\` to see its issues`]),
+    toon.help([`Run \`nu-jira-axi issue list --project ${project.key}\` to see its issues`]),
   );
 }
 

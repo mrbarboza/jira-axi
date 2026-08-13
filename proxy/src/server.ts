@@ -7,10 +7,10 @@ const MAX_BODY_BYTES = 16 * 1024;
 
 const PRIVACY_POLICY = `Privacy Policy
 
-jira-axi (the command-line tool) stores no user data server-side.
+nu-jira-axi (the command-line tool) stores no user data server-side.
 OAuth tokens issued during login are stored only in the local OS keychain on your own machine and are never sent to or retained by any server operated by this project.
 
-This proxy exists solely to relay the OAuth token exchange and refresh requests between the jira-axi CLI and Atlassian.
+This proxy exists solely to relay the OAuth token exchange and refresh requests between the nu-jira-axi CLI and Atlassian.
 It does not log, store, or otherwise persist any request or response data it handles; each request is forwarded to Atlassian and its response is returned directly to the CLI.
 `;
 

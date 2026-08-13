@@ -30,7 +30,7 @@ export function useSite(alias) {
     const config = readConfig();
     if (!config.sites[alias]) {
         throw new AxiError(`no site registered under alias "${alias}"`, "SITE_NOT_FOUND", [
-            "Run `jira-axi site list` to see registered sites",
+            "Run `nu-jira-axi site list` to see registered sites",
         ]);
     }
     config.defaultSite = alias;

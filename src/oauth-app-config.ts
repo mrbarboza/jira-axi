@@ -1,5 +1,5 @@
 /**
- * Identity of jira-axi's single shared Atlassian OAuth 2.0 (3LO) app
+ * Identity of nu-jira-axi's single shared Atlassian OAuth 2.0 (3LO) app
  * (ADR-0002). `client_id` is not a secret (RFC 6749) and is fine to commit.
  *
  * `client_secret` is deliberately NOT here. Per ADR-0003, it lives only as a

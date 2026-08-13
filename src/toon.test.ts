@@ -39,8 +39,8 @@ describe("help", () => {
   });
 
   it("renders a numbered help block", () => {
-    expect(toon.help(["Run `jira-axi issue view <KEY>`"])).toBe(
-      "help[1]:\n  Run `jira-axi issue view <KEY>`",
+    expect(toon.help(["Run `nu-jira-axi issue view <KEY>`"])).toBe(
+      "help[1]:\n  Run `nu-jira-axi issue view <KEY>`",
     );
   });
 

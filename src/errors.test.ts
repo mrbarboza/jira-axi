@@ -16,7 +16,7 @@ describe("noOAuthSessionError", () => {
     const error = noOAuthSessionError("acme.atlassian.net");
     expect(error.code).toBe("AUTH_MISSING");
     expect(error.message).toContain("acme.atlassian.net");
-    expect(error.suggestions.join(" ")).toContain("jira-axi setup auth --site acme.atlassian.net");
+    expect(error.suggestions.join(" ")).toContain("nu-jira-axi setup auth --site acme.atlassian.net");
   });
 });
 

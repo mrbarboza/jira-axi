@@ -1,11 +1,11 @@
 # jira-axi OAuth proxy
 
-Backend token-exchange proxy for jira-axi's shared Atlassian OAuth 2.0 (3LO) app, per [ADR-0003](../docs/adr/adr-0003-backend-token-exchange-proxy-for-oauth-client-secret.md).
+Backend token-exchange proxy for nu-jira-axi's shared Atlassian OAuth 2.0 (3LO) app, per [ADR-0003](../docs/adr/adr-0003-backend-token-exchange-proxy-for-oauth-client-secret.md).
 
 ## What this is
 
 This is the only place `CLIENT_SECRET` exists at runtime.
-The jira-axi CLI still runs the full authorization-code flow itself: it opens the browser, listens on `http://localhost:{port}/callback`, and receives the authorization code.
+The nu-jira-axi CLI still runs the full authorization-code flow itself: it opens the browser, listens on `http://localhost:{port}/callback`, and receives the authorization code.
 It just no longer calls Atlassian's token endpoint directly with an embedded secret.
 
 Instead, the CLI sends the authorization code (or a refresh token) to this proxy over HTTPS, and the proxy performs the actual `code`-for-token or refresh-token exchange with Atlassian, using the secret it holds as a server-side environment variable.
@@ -38,7 +38,7 @@ npm run dev
 ```
 
 The server listens on `PORT` (default `8787`).
-To exercise it against a real Atlassian app, point the CLI's proxy base URL (see the root README / `src/oauth-app-config.ts`) at `http://localhost:8787` and run `jira-axi setup auth`.
+To exercise it against a real Atlassian app, point the CLI's proxy base URL (see the root README / `src/oauth-app-config.ts`) at `http://localhost:8787` and run `nu-jira-axi setup auth`.
 
 ## Testing
 
