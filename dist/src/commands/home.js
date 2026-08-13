@@ -3,7 +3,7 @@ import { JiraClient } from "../client.js";
 import * as toon from "../toon.js";
 export async function homeCommand(_args, site) {
     if (!site) {
-        return toon.combine(toon.pair("site", "none resolved"), toon.help(["Run `jira-axi site add <alias> <host>` to register a site"]));
+        return toon.combine(toon.pair("site", "none resolved"), toon.help(["Run `nu-jira-axi site add <alias> <host>` to register a site"]));
     }
     const authenticated = hasSession(site.host);
     const lines = [
@@ -11,14 +11,14 @@ export async function homeCommand(_args, site) {
         toon.pair("authenticated", authenticated),
     ];
     if (!authenticated) {
-        lines.push(toon.help([`Run \`jira-axi setup auth --site ${site.alias ?? site.host}\``]));
+        lines.push(toon.help([`Run \`nu-jira-axi setup auth --site ${site.alias ?? site.host}\``]));
         return toon.combine(...lines);
     }
     const myOpenCount = await tryCountMyOpenIssues(site);
     if (myOpenCount !== undefined) {
         lines.push(toon.pair("myOpenIssues", myOpenCount));
     }
-    lines.push(toon.help(["Run `jira-axi user whoami` to confirm auth", "Run `jira-axi issue list --mine` to see your issues"]));
+    lines.push(toon.help(["Run `nu-jira-axi user whoami` to confirm auth", "Run `nu-jira-axi issue list --mine` to see your issues"]));
     return toon.combine(...lines);
 }
 const OPEN_COUNT_CAP = 100;

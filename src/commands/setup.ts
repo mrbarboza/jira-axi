@@ -7,15 +7,15 @@ import { saveSession } from "../oauth-store.js";
 import { cloudIdResolutionError } from "../errors.js";
 import * as toon from "../toon.js";
 
-export const SETUP_HELP = `usage: jira-axi setup <subcommand> [flags]
+export const SETUP_HELP = `usage: nu-jira-axi setup <subcommand> [flags]
 subcommands[3]:
   auth --site <alias>    # opens a browser to authorize this site
   hooks                   # install the SessionStart hook
   skill --check           # check whether the skill doc is stale
 examples:
-  jira-axi site add work acme.atlassian.net
-  jira-axi setup auth --site work
-  jira-axi setup hooks
+  nu-jira-axi site add work acme.atlassian.net
+  nu-jira-axi setup auth --site work
+  nu-jira-axi setup hooks
 `;
 
 export async function setupCommand(args: string[]): Promise<string> {
@@ -29,7 +29,7 @@ export async function setupCommand(args: string[]): Promise<string> {
       return setupSkill(rest);
     default:
       throw new AxiError(`unknown setup subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-        "Run `jira-axi setup --help` to see subcommands",
+        "Run `nu-jira-axi setup --help` to see subcommands",
       ]);
   }
 }
@@ -66,13 +66,13 @@ async function setupAuth(args: string[]): Promise<string> {
   return toon.combine(
     toon.pair("authenticated", site.host),
     toon.pair("cloudId", matched.id),
-    toon.help([`Run \`jira-axi user whoami --site ${site.alias ?? site.host}\` to confirm`]),
+    toon.help([`Run \`nu-jira-axi user whoami --site ${site.alias ?? site.host}\` to confirm`]),
   );
 }
 
 /** Opens the system browser; falls back to printing the URL for headless/SSH sessions where launch fails. */
 async function openBrowserOrPrintUrl(url: string): Promise<void> {
-  process.stderr.write(`Open this URL to authorize jira-axi:\n${url}\n`);
+  process.stderr.write(`Open this URL to authorize nu-jira-axi:\n${url}\n`);
   try {
     await open(url);
   } catch {
@@ -81,7 +81,7 @@ async function openBrowserOrPrintUrl(url: string): Promise<void> {
 }
 
 function setupHooks(): string {
-  installSessionStartHooks({ marker: "jira-axi", binaryNames: ["jira-axi"] });
+  installSessionStartHooks({ marker: "nu-jira-axi", binaryNames: ["nu-jira-axi"] });
   return toon.pair("hooks", "installed");
 }
 
@@ -92,7 +92,7 @@ function setupHooks(): string {
  */
 function setupSkill(args: string[]): string {
   if (!hasFlag(args, "--check")) {
-    throw new AxiError("usage: jira-axi setup skill --check", "VALIDATION_ERROR");
+    throw new AxiError("usage: nu-jira-axi setup skill --check", "VALIDATION_ERROR");
   }
   return toon.combine(
     toon.pair("skill", "not yet generated"),

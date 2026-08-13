@@ -10,15 +10,15 @@ import { adfToMarkdown } from "../adf.js";
 import * as toon from "../toon.js";
 import { issueListSuggestions, issueViewSuggestions } from "../suggestions.js";
 
-export const ISSUE_HELP = `usage: jira-axi issue <subcommand> [flags]
+export const ISSUE_HELP = `usage: nu-jira-axi issue <subcommand> [flags]
 subcommands[3]:
   list [--mine] [--jql Q] [--project K] [--status S] [--sprint current] [--assignee U] [--label L] [--fix-version V] [--limit 50]
   view <KEY> [--comments] [--full]
   tree <KEY> [--depth 2]
 examples:
-  jira-axi issue list --mine --sprint current
-  jira-axi issue view PROJ-123 --comments
-  jira-axi issue tree PROJ-100
+  nu-jira-axi issue list --mine --sprint current
+  nu-jira-axi issue view PROJ-123 --comments
+  nu-jira-axi issue tree PROJ-100
 `;
 
 const BASE_FIELDS = ["summary", "status", "assignee", "priority", "labels", "updated", "parent"];
@@ -41,7 +41,7 @@ export async function issueCommand(args: string[], site: SiteContext | undefined
       return issueTree(rest, site);
     default:
       throw new AxiError(`unknown issue subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-        "Run `jira-axi issue --help` to see subcommands",
+        "Run `nu-jira-axi issue --help` to see subcommands",
       ]);
   }
 }
@@ -103,7 +103,7 @@ export async function runIssueSearch(
 async function issueView(args: string[], site: SiteContext): Promise<string> {
   const key = getPositional(args, 0);
   if (!key) {
-    throw new AxiError("usage: jira-axi issue view <KEY>", "VALIDATION_ERROR");
+    throw new AxiError("usage: nu-jira-axi issue view <KEY>", "VALIDATION_ERROR");
   }
   const full = hasFlag(args, "--full");
   const withComments = hasFlag(args, "--comments");
@@ -158,7 +158,7 @@ interface TreeNodeWithParent extends TreeNode {
 async function issueTree(args: string[], site: SiteContext): Promise<string> {
   const key = getPositional(args, 0);
   if (!key) {
-    throw new AxiError("usage: jira-axi issue tree <KEY> [--depth 2]", "VALIDATION_ERROR");
+    throw new AxiError("usage: nu-jira-axi issue tree <KEY> [--depth 2]", "VALIDATION_ERROR");
   }
   const depth = Math.min(Math.max(Number(getFlag(args, "--depth") ?? "2"), 1), 3);
 
@@ -195,7 +195,7 @@ async function issueTree(args: string[], site: SiteContext): Promise<string> {
       "statusCounts",
       [...statusCounts.entries()].map(([status, count]) => ({ status, count })),
     ),
-    toon.help([`Run \`jira-axi issue view ${key}\` to see the epic's own detail`]),
+    toon.help([`Run \`nu-jira-axi issue view ${key}\` to see the epic's own detail`]),
   );
 }
 

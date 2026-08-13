@@ -46,7 +46,7 @@ export class JiraClient {
         }
         return this.refreshAndPersist(session);
     }
-    // Two jira-axi processes hitting an expired token at the same time would
+    // Two nu-jira-axi processes hitting an expired token at the same time would
     // otherwise both call refreshAndPersistLocked concurrently and race the
     // Keychain write that persists the rotated tokens; this lock serializes
     // them per host so only one process ever refreshes at a time.

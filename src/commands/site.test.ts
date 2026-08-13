@@ -14,7 +14,7 @@ let homeDir: string;
 let originalHome: string | undefined;
 
 beforeEach(() => {
-  homeDir = mkdtempSync(join(tmpdir(), "jira-axi-home-"));
+  homeDir = mkdtempSync(join(tmpdir(), "nu-jira-axi-home-"));
   originalHome = process.env.HOME;
   process.env.HOME = homeDir;
   vi.mocked(hasSession).mockReset();

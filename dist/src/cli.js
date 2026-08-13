@@ -18,16 +18,16 @@ import { filterCommand, FILTER_HELP } from "./commands/filter.js";
 import { searchCommand, SEARCH_HELP } from "./commands/search.js";
 export const DESCRIPTION = "Agent-ergonomic CLI for Jira Cloud — token-efficient TOON output, pre-computed aggregates. Read-only v1.";
 const VERSION = readPackageVersion();
-export const TOP_HELP = `usage: jira-axi [command] [args] [flags]
+export const TOP_HELP = `usage: nu-jira-axi [command] [args] [flags]
 commands[10]: (none)=dashboard, site, setup, user, issue, sprint, board, project, filter, search, api
 global: --site <alias|host> on any command, overriding JIRA_AXI_SITE / .jira-axi.json / default site
 examples:
-  jira-axi
-  jira-axi site add work acme.atlassian.net
-  jira-axi setup auth --site work
-  jira-axi user whoami
-  jira-axi issue list --mine
-  jira-axi sprint current --project PROJ
+  nu-jira-axi
+  nu-jira-axi site add work acme.atlassian.net
+  nu-jira-axi setup auth --site work
+  nu-jira-axi user whoami
+  nu-jira-axi issue list --mine
+  nu-jira-axi sprint current --project PROJ
 `;
 const COMMAND_HELP = {
     site: SITE_HELP,

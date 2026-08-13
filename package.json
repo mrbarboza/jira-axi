@@ -4,7 +4,7 @@
   "description": "AXI-style CLI for Jira Cloud — token-efficient TOON output, pre-computed aggregates, read-only v1",
   "type": "module",
   "bin": {
-    "jira-axi": "./dist/bin/jira-axi.js"
+    "nu-jira-axi": "./dist/bin/nu-jira-axi.js"
   },
   "files": [
     "dist",
@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "compile": "tsc",
-    "dev": "tsx bin/jira-axi.ts",
+    "dev": "tsx bin/nu-jira-axi.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint ."

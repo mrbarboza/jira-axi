@@ -138,7 +138,7 @@ describe("JiraClient", () => {
       expiresIn: 3600,
       scope: "read:jira-work",
     });
-    // Mirrors the real failure: two jira-axi processes racing macOS's
+    // Mirrors the real failure: two nu-jira-axi processes racing macOS's
     // `security add-generic-password -U` can make one of them throw this.
     saveSessionMock.mockImplementation(() => {
       throw new Error("SecKeychainItemModifyContent: The specified item already exists in the keychain.");

@@ -6,13 +6,13 @@ import { missingSiteError } from "../errors.js";
 import { runIssueSearch } from "./issue.js";
 import * as toon from "../toon.js";
 
-export const FILTER_HELP = `usage: jira-axi filter <subcommand> [args]
+export const FILTER_HELP = `usage: nu-jira-axi filter <subcommand> [args]
 subcommands[2]:
   list
   run <id>
 examples:
-  jira-axi filter list
-  jira-axi filter run 10042
+  nu-jira-axi filter list
+  nu-jira-axi filter run 10042
 `;
 
 interface JiraFilter {
@@ -34,7 +34,7 @@ export async function filterCommand(args: string[], site: SiteContext | undefine
       return filterRun(rest, site);
     default:
       throw new AxiError(`unknown filter subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-        "Run `jira-axi filter --help` to see subcommands",
+        "Run `nu-jira-axi filter --help` to see subcommands",
       ]);
   }
 }
@@ -47,13 +47,13 @@ async function filterList(site: SiteContext): Promise<string> {
     name: filter.name,
     owner: filter.owner?.displayName ?? "",
   }));
-  return toon.combine(toon.table("filters", rows), toon.help(["Run `jira-axi filter run <id>` to see its issues"]));
+  return toon.combine(toon.table("filters", rows), toon.help(["Run `nu-jira-axi filter run <id>` to see its issues"]));
 }
 
 async function filterRun(args: string[], site: SiteContext): Promise<string> {
   const id = getPositional(args, 0);
   if (!id) {
-    throw new AxiError("usage: jira-axi filter run <id>", "VALIDATION_ERROR");
+    throw new AxiError("usage: nu-jira-axi filter run <id>", "VALIDATION_ERROR");
   }
   const client = new JiraClient({ site });
   const filter = (await client.get(`/rest/api/3/filter/${id}`)) as JiraFilter;

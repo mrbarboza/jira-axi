@@ -5,13 +5,13 @@ import { missingSiteError } from "../errors.js";
 import { resolveBoardId } from "../agile.js";
 import { loadFields, fieldId } from "../fields.js";
 import * as toon from "../toon.js";
-export const SPRINT_HELP = `usage: jira-axi sprint <subcommand> [flags]
+export const SPRINT_HELP = `usage: nu-jira-axi sprint <subcommand> [flags]
 subcommands[2]:
   current [--board B] [--project K] [--fix-version V]   # active sprint + status/points rollup
   list --board B                       # all sprints on a board
 examples:
-  jira-axi sprint current --project PROJ
-  jira-axi sprint list --board 42
+  nu-jira-axi sprint current --project PROJ
+  nu-jira-axi sprint list --board 42
 `;
 export async function sprintCommand(args, site) {
     const [subcommand, ...rest] = args;
@@ -25,7 +25,7 @@ export async function sprintCommand(args, site) {
             return sprintList(rest, site);
         default:
             throw new AxiError(`unknown sprint subcommand: ${subcommand ?? "(none)"}`, "VALIDATION_ERROR", [
-                "Run `jira-axi sprint --help` to see subcommands",
+                "Run `nu-jira-axi sprint --help` to see subcommands",
             ]);
     }
 }
@@ -40,7 +40,7 @@ async function sprintCurrent(args, site) {
     }));
     const sprint = active.values[0];
     if (!sprint) {
-        return toon.combine(toon.pair("sprint", "none active"), toon.help(["Run `jira-axi sprint list --board " + boardId + "` to see all sprints on this board"]));
+        return toon.combine(toon.pair("sprint", "none active"), toon.help(["Run `nu-jira-axi sprint list --board " + boardId + "` to see all sprints on this board"]));
     }
     const fields = await loadFields(site);
     const pointsFieldId = fieldId(fields, "Story point estimate") ?? fieldId(fields, "Story Points");
@@ -66,7 +66,7 @@ async function sprintCurrent(args, site) {
         name: sprint.name,
         startDate: sprint.startDate ?? "",
         endDate: sprint.endDate ?? "",
-    }), toon.table("statusCounts", [...statusCounts.entries()].map(([status, count]) => ({ status, count }))), toon.pair("totalStoryPoints", totalPoints), toon.pair("issueCount", issues.issues.length), toon.help([`Run \`jira-axi issue list --jql "sprint = ${sprint.id}"\` to see the issues`]));
+    }), toon.table("statusCounts", [...statusCounts.entries()].map(([status, count]) => ({ status, count }))), toon.pair("totalStoryPoints", totalPoints), toon.pair("issueCount", issues.issues.length), toon.help([`Run \`nu-jira-axi issue list --jql "sprint = ${sprint.id}"\` to see the issues`]));
 }
 async function sprintList(args, site) {
     const client = new JiraClient({ site });
@@ -82,6 +82,6 @@ async function sprintList(args, site) {
         startDate: sprint.startDate ?? "",
         endDate: sprint.endDate ?? "",
     }));
-    return toon.combine(toon.table("sprints", rows), toon.help(["Run `jira-axi sprint current --board " + boardId + "` to see the active one"]));
+    return toon.combine(toon.table("sprints", rows), toon.help(["Run `nu-jira-axi sprint current --board " + boardId + "` to see the active one"]));
 }
 //# sourceMappingURL=sprint.js.map
