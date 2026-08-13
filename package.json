@@ -1,5 +1,5 @@
 {
-  "name": "jira-axi",
+  "name": "nu-jira-axi",
   "version": "0.1.0-alfa",
   "description": "AXI-style CLI for Jira Cloud — token-efficient TOON output, pre-computed aggregates, read-only v1",
   "type": "module",
