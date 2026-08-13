@@ -61,7 +61,8 @@ const COMMANDS: Record<string, AxiCliCommand<SiteContext | undefined>> = {
 };
 
 export async function main(options: { argv?: string[]; stdout?: { write: (chunk: string) => unknown } } = {}) {
-  const argv = options.argv ?? process.argv.slice(2);
+  const rawArgv = options.argv ?? process.argv.slice(2);
+  const argv = normalizeArgv(rawArgv);
   const stdout = options.stdout ?? process.stdout;
 
   // axi-sdk-js's `resolveContext` hook isn't wrapped in a try/catch, so a
@@ -78,7 +79,7 @@ export async function main(options: { argv?: string[]; stdout?: { write: (chunk:
   }
 
   await runAxiCli<SiteContext | undefined>({
-    ...(options.argv ? { argv: options.argv } : {}),
+    argv,
     description: DESCRIPTION,
     version: VERSION,
     topLevelHelp: TOP_HELP,
@@ -88,6 +89,16 @@ export async function main(options: { argv?: string[]; stdout?: { write: (chunk:
     getCommandHelp: (command) => COMMAND_HELP[command],
     resolveContext: ({ args }) => resolveSiteOrUndefined(getFlag(args, "--site")),
   });
+}
+
+// axi-sdk-js's own `--help` handling only recognizes the literal "--help"
+// token (both `argv[0] === "--help"` at the top level and `args.includes("--help")`
+// per subcommand) and treats bare invocation as "run the home command", not
+// "show help". Rewrite argv here so its checks see what they expect: `-h`
+// becomes `--help` everywhere, and no args at all becomes `["--help"]`.
+function normalizeArgv(argv: string[]): string[] {
+  if (argv.length === 0) return ["--help"];
+  return argv.map((token) => (token === "-h" ? "--help" : token));
 }
 
 function renderAxiError(error: AxiError): string {
