@@ -6,6 +6,7 @@ export interface JqlOptions {
     sprint?: string;
     assignee?: string;
     label?: string;
+    fixVersion?: string;
 }
 export type JqlSource = "explicit" | "built";
 export interface JqlResult {

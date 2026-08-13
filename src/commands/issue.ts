@@ -12,7 +12,7 @@ import { issueListSuggestions, issueViewSuggestions } from "../suggestions.js";
 
 export const ISSUE_HELP = `usage: jira-axi issue <subcommand> [flags]
 subcommands[3]:
-  list [--mine] [--jql Q] [--project K] [--status S] [--sprint current] [--assignee U] [--label L] [--limit 50]
+  list [--mine] [--jql Q] [--project K] [--status S] [--sprint current] [--assignee U] [--label L] [--fix-version V] [--limit 50]
   view <KEY> [--comments] [--full]
   tree <KEY> [--depth 2]
 examples:
@@ -55,6 +55,7 @@ async function issueList(args: string[], site: SiteContext): Promise<string> {
     sprint: getFlag(args, "--sprint"),
     assignee: getFlag(args, "--assignee"),
     label: getFlag(args, "--label"),
+    fixVersion: getFlag(args, "--fix-version"),
   });
   const limit = Math.min(Number(getFlag(args, "--limit") ?? DEFAULT_LIMIT), MAX_LIMIT);
   return runIssueSearch(site, jql, source, limit);
