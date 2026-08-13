@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { AxiError } from "axi-sdk-js";
 import type { SiteContext } from "./context.js";
 
 const getSessionMock = vi.fn();
@@ -127,5 +128,62 @@ describe("JiraClient", () => {
   it("throws noOAuthSessionError when no session is stored", async () => {
     getSessionMock.mockReturnValue(undefined);
     await expect(new JiraClient({ site: SITE }).get("/rest/api/3/myself")).rejects.toThrow(/no OAuth session/);
+  });
+
+  it("surfaces a local session-persistence failure as a proper AxiError, not a raw error", async () => {
+    getSessionMock.mockReturnValue(session({ accessTokenExpiresAt: Date.now() - 1000 }));
+    refreshAccessTokenMock.mockResolvedValue({
+      accessToken: "access-2",
+      refreshToken: "refresh-2",
+      expiresIn: 3600,
+      scope: "read:jira-work",
+    });
+    // Mirrors the real failure: two jira-axi processes racing macOS's
+    // `security add-generic-password -U` can make one of them throw this.
+    saveSessionMock.mockImplementation(() => {
+      throw new Error("SecKeychainItemModifyContent: The specified item already exists in the keychain.");
+    });
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve({}) }) as unknown as typeof fetch;
+
+    const error: unknown = await new JiraClient({ site: SITE }).get("/rest/api/3/myself").catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(AxiError);
+    expect((error as AxiError).code).toBe("AUTH_SESSION_PERSIST_FAILED");
+  });
+
+  it("regression: two clients racing the same expired session only refresh once, serialized by the lock", async () => {
+    // Reproduces the reported bug: without a cross-process/cross-call lock,
+    // two near-simultaneous invocations both see the token as expired and
+    // both call refreshAccessToken independently, wasting an Atlassian-side
+    // token rotation and racing the Keychain write that persists the
+    // result. With the lock, the second caller waits for the first and
+    // reuses its rotated token instead of refreshing again.
+    let store = session({ accessToken: "access-0", accessTokenExpiresAt: Date.now() - 1000 });
+    getSessionMock.mockImplementation(() => store);
+    saveSessionMock.mockImplementation((_host: string, next: unknown) => {
+      store = next as typeof store;
+    });
+    let refreshCalls = 0;
+    refreshAccessTokenMock.mockImplementation(async () => {
+      refreshCalls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return {
+        accessToken: `access-${refreshCalls}`,
+        refreshToken: `refresh-${refreshCalls}`,
+        expiresIn: 3600,
+        scope: "read:jira-work",
+      };
+    });
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve({}) }) as unknown as typeof fetch;
+
+    const clientA = new JiraClient({ site: SITE });
+    const clientB = new JiraClient({ site: SITE });
+    await Promise.all([clientA.get("/rest/api/3/myself"), clientB.get("/rest/api/3/myself")]);
+
+    expect(refreshAccessTokenMock).toHaveBeenCalledTimes(1);
   });
 });

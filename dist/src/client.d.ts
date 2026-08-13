@@ -15,6 +15,7 @@ export declare class JiraClient {
     private ensureCloudId;
     private getValidAccessToken;
     private refreshAndPersist;
+    private refreshAndPersistLocked;
     private request;
     private handleResponse;
 }
