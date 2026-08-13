@@ -2,7 +2,12 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { resolveSiteOrUndefined } from "./cli.js";
+import { main, resolveSiteOrUndefined } from "./cli.js";
+
+function captureStdout(): { write: (chunk: string) => void; output: string } {
+  const state = { write: (chunk: string) => (state.output += chunk), output: "" };
+  return state;
+}
 
 let homeDir: string;
 let originalHome: string | undefined;
@@ -51,5 +56,31 @@ describe("resolveSiteOrUndefined", () => {
       alias: "work",
       source: "default",
     });
+  });
+});
+
+describe("main", () => {
+  it("treats -h as an alias for --help at the top level", async () => {
+    const dash = captureStdout();
+    const full = captureStdout();
+    await main({ argv: ["-h"], stdout: dash });
+    await main({ argv: ["--help"], stdout: full });
+    expect(dash.output).toBe(full.output);
+  });
+
+  it("treats -h as an alias for --help after a subcommand", async () => {
+    const dash = captureStdout();
+    const full = captureStdout();
+    await main({ argv: ["issue", "-h"], stdout: dash });
+    await main({ argv: ["issue", "--help"], stdout: full });
+    expect(dash.output).toBe(full.output);
+  });
+
+  it("prints top-level help on bare invocation instead of the dashboard", async () => {
+    const bare = captureStdout();
+    const full = captureStdout();
+    await main({ argv: [], stdout: bare });
+    await main({ argv: ["--help"], stdout: full });
+    expect(bare.output).toBe(full.output);
   });
 });
