@@ -36,7 +36,7 @@ jira-axi sprint current --project PROJ
 The target site resolves per invocation, in order: `--site`, `JIRA_AXI_SITE`, the nearest `./.jira-axi.json`, then `defaultSite` in `~/.jira-axi/config.json`.
 Run `jira-axi --help` or `jira-axi <command> --help` for the full command list.
 
-If you authorized before the Agile scopes (`read:board-scope:jira-software`, `read:sprint:jira-software`, `read:project:jira`) were added, `sprint`/`board` commands will 401 until you re-run `jira-axi setup auth --site <site>` to pick up the new scopes.
+If you authorized before this CLI's OAuth scope set last changed, `sprint`/`board` commands will 401 until you re-run `jira-axi setup auth --site <site>` to pick up the current scopes. `sprint`/`board` call the Agile REST API (`/rest/agile/1.0/...`), which is covered by the classic `read:jira-work` scope - the granular `read:board-scope:jira-software`/`read:sprint:jira-software` scopes were tried and dropped (see `src/oauth-app-config.ts`) because `GET /rest/agile/1.0/sprint/{id}/issue` 401s ("scope does not match") even when granted.
 
 ## Commands
 

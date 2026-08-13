@@ -20,12 +20,13 @@ describe("buildAuthorizeUrl", () => {
     expect(url.searchParams.has("code_challenge")).toBe(false);
   });
 
-  it("requests the Agile scopes needed by the sprint/board commands' /rest/agile/1.0/... calls", () => {
+  it("requests read:jira-work, relied on for the sprint/board commands' /rest/agile/1.0/... calls", () => {
     const url = buildAuthorizeUrl("state-123");
     const scopes = url.searchParams.get("scope")?.split(" ") ?? [];
-    expect(scopes).toContain("read:board-scope:jira-software");
-    expect(scopes).toContain("read:sprint:jira-software");
+    expect(scopes).toContain("read:jira-work");
     expect(scopes).toContain("read:project:jira");
+    expect(scopes).not.toContain("read:board-scope:jira-software");
+    expect(scopes).not.toContain("read:sprint:jira-software");
   });
 });
 
