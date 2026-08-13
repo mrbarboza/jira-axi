@@ -54,6 +54,22 @@ export function refreshFailedError(host: string): AxiError {
   );
 }
 
+export function sessionPersistFailedError(host: string): AxiError {
+  return new AxiError(
+    `refreshed the access token for ${host} with Jira but failed to save it locally, so this run couldn't use it`,
+    "AUTH_SESSION_PERSIST_FAILED",
+    ["Run the command again"],
+  );
+}
+
+export function refreshLockTimeoutError(host: string): AxiError {
+  return new AxiError(
+    `timed out waiting for another jira-axi process to finish refreshing the session for ${host}`,
+    "AUTH_REFRESH_LOCK_TIMEOUT",
+    ["Run the command again"],
+  );
+}
+
 export function cloudIdResolutionError(host: string, availableHosts: string[]): AxiError {
   const available = availableHosts.length > 0 ? availableHosts.join(", ") : "(none)";
   return new AxiError(

@@ -1,5 +1,6 @@
 import { getSession, saveSession, type OAuthSession } from "./oauth-store.js";
 import { refreshAccessToken } from "./oauth.js";
+import { LockTimeoutError, withLock } from "./lock.js";
 import {
   authRejectedError,
   forbiddenError,
@@ -8,6 +9,8 @@ import {
   jqlError,
   noOAuthSessionError,
   refreshFailedError,
+  refreshLockTimeoutError,
+  sessionPersistFailedError,
 } from "./errors.js";
 import type { SiteContext } from "./context.js";
 
@@ -63,20 +66,46 @@ export class JiraClient {
     return this.refreshAndPersist(session);
   }
 
+  // Two jira-axi processes hitting an expired token at the same time would
+  // otherwise both call refreshAndPersistLocked concurrently and race the
+  // Keychain write that persists the rotated tokens; this lock serializes
+  // them per host so only one process ever refreshes at a time.
   private async refreshAndPersist(session: OAuthSession): Promise<string> {
+    try {
+      return await withLock(this.host, () => this.refreshAndPersistLocked(session));
+    } catch (error) {
+      if (error instanceof LockTimeoutError) throw refreshLockTimeoutError(this.host);
+      throw error;
+    }
+  }
+
+  private async refreshAndPersistLocked(session: OAuthSession): Promise<string> {
+    // Another process may have already refreshed and persisted the same
+    // (still-current) session while we were waiting for the lock; reuse its
+    // rotated token instead of refreshing again. Compared by token identity,
+    // not expiry, so this doesn't short-circuit the 401-triggered reactive
+    // refresh, whose caller already re-read the (not-yet-expired) session.
+    const latest = getSession(this.host) ?? session;
+    if (latest.accessToken !== session.accessToken) {
+      return latest.accessToken;
+    }
     let refreshed;
     try {
-      refreshed = await refreshAccessToken(session.refreshToken);
+      refreshed = await refreshAccessToken(latest.refreshToken);
     } catch {
       throw refreshFailedError(this.host);
     }
     const next: OAuthSession = {
-      ...session,
+      ...latest,
       accessToken: refreshed.accessToken,
       refreshToken: refreshed.refreshToken,
       accessTokenExpiresAt: Date.now() + refreshed.expiresIn * 1000,
     };
-    saveSession(this.host, next);
+    try {
+      saveSession(this.host, next);
+    } catch {
+      throw sessionPersistFailedError(this.host);
+    }
     return next.accessToken;
   }
 

@@ -37,6 +37,12 @@ export function oauthStateMismatchError() {
 export function refreshFailedError(host) {
     return new AxiError(`Jira rejected the refresh token for ${host}: the session may have expired after 90 days of inactivity or been revoked`, "AUTH_REFRESH_FAILED", [`Run \`jira-axi setup auth --site ${host}\` to authenticate again`]);
 }
+export function sessionPersistFailedError(host) {
+    return new AxiError(`refreshed the access token for ${host} with Jira but failed to save it locally, so this run couldn't use it`, "AUTH_SESSION_PERSIST_FAILED", ["Run the command again"]);
+}
+export function refreshLockTimeoutError(host) {
+    return new AxiError(`timed out waiting for another jira-axi process to finish refreshing the session for ${host}`, "AUTH_REFRESH_LOCK_TIMEOUT", ["Run the command again"]);
+}
 export function cloudIdResolutionError(host, availableHosts) {
     const available = availableHosts.length > 0 ? availableHosts.join(", ") : "(none)";
     return new AxiError(`authorized account has no access to ${host} (accessible sites: ${available})`, "CLOUD_ID_NOT_FOUND", ["Confirm you approved access to the right site on the consent screen"]);

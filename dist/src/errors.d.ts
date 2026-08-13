@@ -7,6 +7,8 @@ export declare function oauthDeniedError(host: string): AxiError;
 export declare function oauthCallbackTimeoutError(host: string): AxiError;
 export declare function oauthStateMismatchError(): AxiError;
 export declare function refreshFailedError(host: string): AxiError;
+export declare function sessionPersistFailedError(host: string): AxiError;
+export declare function refreshLockTimeoutError(host: string): AxiError;
 export declare function cloudIdResolutionError(host: string, availableHosts: string[]): AxiError;
 export declare function forbiddenError(host: string): AxiError;
 export declare function jqlError(jql: string, detail: string): AxiError;
