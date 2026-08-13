@@ -44,6 +44,13 @@ describe("buildJql", () => {
     });
   });
 
+  it("compiles --fix-version alongside other filters", () => {
+    expect(buildJql({ project: "PROJ", fixVersion: "1.2.0" })).toEqual({
+      jql: 'project = "PROJ" AND fixVersion = "1.2.0" ORDER BY updated DESC',
+      source: "built",
+    });
+  });
+
   it("escapes embedded double quotes in a value", () => {
     expect(buildJql({ project: 'FOO"BAR' })).toEqual({
       jql: 'project = "FOO\\"BAR" ORDER BY updated DESC',

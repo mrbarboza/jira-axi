@@ -22,8 +22,10 @@ export function buildJql(options) {
         clauses.push("sprint in openSprints()");
     else if (options.sprint)
         clauses.push(`sprint = ${quote(options.sprint)}`);
+    if (options.fixVersion)
+        clauses.push(`fixVersion = ${quote(options.fixVersion)}`);
     if (clauses.length === 0) {
-        throw new AxiError("no filter given: pass --jql, or at least one of --mine/--project/--status/--sprint/--assignee/--label", "VALIDATION_ERROR");
+        throw new AxiError("no filter given: pass --jql, or at least one of --mine/--project/--status/--sprint/--assignee/--label/--fix-version", "VALIDATION_ERROR");
     }
     return { jql: `${clauses.join(" AND ")} ORDER BY updated DESC`, source: "built" };
 }

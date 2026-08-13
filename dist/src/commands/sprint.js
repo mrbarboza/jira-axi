@@ -7,7 +7,7 @@ import { loadFields, fieldId } from "../fields.js";
 import * as toon from "../toon.js";
 export const SPRINT_HELP = `usage: jira-axi sprint <subcommand> [flags]
 subcommands[2]:
-  current [--board B] [--project K]   # active sprint + status/points rollup
+  current [--board B] [--project K] [--fix-version V]   # active sprint + status/points rollup
   list --board B                       # all sprints on a board
 examples:
   jira-axi sprint current --project PROJ
@@ -45,8 +45,10 @@ async function sprintCurrent(args, site) {
     const fields = await loadFields(site);
     const pointsFieldId = fieldId(fields, "Story point estimate") ?? fieldId(fields, "Story Points");
     const sprintFields = ["status", ...(pointsFieldId ? [pointsFieldId] : [])];
+    const fixVersion = getFlag(args, "--fix-version");
     const issues = (await client.get(`/rest/agile/1.0/sprint/${sprint.id}/issue`, {
         fields: sprintFields.join(","),
+        ...(fixVersion ? { jql: `fixVersion = "${fixVersion.replace(/"/g, '\\"')}"` } : {}),
     }));
     const statusCounts = new Map();
     let totalPoints = 0;

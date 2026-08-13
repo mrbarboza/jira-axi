@@ -8,6 +8,7 @@ export interface JqlOptions {
   sprint?: string;
   assignee?: string;
   label?: string;
+  fixVersion?: string;
 }
 
 export type JqlSource = "explicit" | "built";
@@ -34,10 +35,11 @@ export function buildJql(options: JqlOptions): JqlResult {
   if (options.label) clauses.push(`labels = ${quote(options.label)}`);
   if (options.sprint === "current") clauses.push("sprint in openSprints()");
   else if (options.sprint) clauses.push(`sprint = ${quote(options.sprint)}`);
+  if (options.fixVersion) clauses.push(`fixVersion = ${quote(options.fixVersion)}`);
 
   if (clauses.length === 0) {
     throw new AxiError(
-      "no filter given: pass --jql, or at least one of --mine/--project/--status/--sprint/--assignee/--label",
+      "no filter given: pass --jql, or at least one of --mine/--project/--status/--sprint/--assignee/--label/--fix-version",
       "VALIDATION_ERROR",
     );
   }
